@@ -119,7 +119,7 @@ export const Messages = () => {
 
   return (
     <>
-    <div className="absolute inset-0 bg-background/60 w-[calc(100vw-20rem)] h-[calc(100vh-5rem)] mt-[5rem] ml-[20rem] backdrop-blur-md flex items-center justify-center z-50">
+    <div className="absolute inset-0 bg-background/60 w-[calc(100vw-17rem)] h-[calc(100vh-5rem)] mt-[5rem] ml-[20rem] backdrop-blur-md flex items-center justify-center z-50">
     <div className="text-center space-y-2">
       <h2 className="text-2xl font-bold">Coming Soon 🚀</h2>
       <p className="text-muted-foreground">This feature will be available in a future update</p>
