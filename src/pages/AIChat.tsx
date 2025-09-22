@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState,useEffect,useRef } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Bot, Send, User } from "lucide-react";
+import { Bot, Send, User, Sparkles, Zap, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ModelClient from "@azure-rest/ai-inference";
 import { AzureKeyCredential } from "@azure/core-auth";
@@ -19,72 +19,81 @@ export const AIChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSendMessage = async () => {
-    setIsLoading(true);
-    if (!message.trim()) return;
-    const axiosres=await api.post("/users/aichat",{message:message})
-    if(!axiosres.data.success){
+  
+ const handleSendMessage = async () => {
+  if (!message.trim()) return;
+
+  // Add user message to conversation first
+  const userMessage: Message = {
+    id: Date.now().toString() + "-user",
+    content: message.trim(),
+    sender: "user",
+    timestamp: new Date(),
+  };
+
+  setMessages((prev) => [...prev, userMessage]);
+  const currentMessage = message.trim();
+  setMessage(""); // Clear input
+  setIsLoading(true);
+
+  try {
+    // Send request to backend
+    const axiosres = await api.post("/users/aichat", { message: currentMessage });
+    
+    if (!axiosres.data.success) {
       console.error("Error from AI service:", axiosres.data.message);
-      setIsLoading(false);
-      return;
-    }
-    const aiMessage: Message = {
-      id: Date.now().toString() + "-ai",
-      content: axiosres.data.message,
-      sender: "ai",
-      timestamp: new Date(),
-    };
-    setMessages((prev) => [...prev, aiMessage]);
-    // const key=import.meta.env.OPENAI_API_KEY
-    // try {
-    //   setIsLoading(true);
-    //   const client = ModelClient(
-    //     import.meta.env.OPENAI_ENDPOINT,
-    //     new AzureKeyCredential(key)
-    //   );
-    //   const response = await client.path("/chat/completions").post({
-    //   body: {
-    //     messages: [
-    //       { role: "system", content: "" },
-    //       { role: "user", content: message },
-    //     ],
-    //     model: "openai/gpt-4o",
-    //   },
-    // });
-    // if (!response)
-    //   console.error("No response from AI service");
-    // console.log("AI response:", response.body);
-    // // setMessages((prev) => [...prev, response.data.response.body.choices[0].message.content])
-    // } catch (error) {
-    //   console.error("Error communicating with AI service:", error);
-    //   setIsLoading(false);
-    // }
-
-    // Add user message to conversation
-    const userMessage: Message = {
-      id: Date.now().toString() + "-user",
-      content: message.trim(),
-      sender: "user",
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    setMessage("");
-    setIsLoading(true);
-
-    // Simulate AI response (replace with actual AI API call)
-    setTimeout(() => {
-      const aiMessage: Message = {
-        id: Date.now().toString() + "-ai",
-        content: `I understand you're asking about: "${userMessage.content}"\n\nThis is a mock AI response. In a real implementation, this would connect to an AI service like OpenAI, Anthropic, or similar. Note that I don't actually remember our previous conversation - each response is generated independently.`,
+      // Add error message to chat
+      const errorMessage: Message = {
+        id: Date.now().toString() + "-ai-error",
+        content: "Sorry, I encountered an error. Please try again.",
         sender: "ai",
         timestamp: new Date(),
       };
+      setMessages((prev) => [...prev, errorMessage]);
+      return;
+    }
 
-      setMessages((prev) => [...prev, aiMessage]);
-      setIsLoading(false);
-    }, 1500);
+    // Extract AI response - now it's directly in data property
+    const aiResponseContent = axiosres.data.message || "No response received";
+    
+    // Ensure it's a string
+    const messageContent = typeof aiResponseContent === 'string' ? 
+      aiResponseContent : 
+      JSON.stringify(aiResponseContent);
+    
+    const aiMessage: Message = {
+      id: Date.now().toString() + "-ai",
+      content: messageContent,
+      sender: "ai",
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, aiMessage]);
+    
+  } catch (error) {
+    console.error("Error communicating with AI service:", error);
+    
+    // Add error message to chat
+    const errorMessage: Message = {
+      id: Date.now().toString() + "-ai-error",
+      content: "Sorry, I encountered an error while processing your request. Please try again.",
+      sender: "ai",
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, errorMessage]);
+  } finally {
+    setIsLoading(false);
+  }
+};
+const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {

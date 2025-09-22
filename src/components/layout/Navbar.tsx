@@ -125,7 +125,7 @@ export const Navbar = () => {
                   <Avatar className="h-10 w-10">
                     <AvatarImage src="/placeholder-avatar.jpg" alt="Profile" />
                     <AvatarFallback className="bg-primary text-primary-foreground">
-                      JD
+                      <User className="h-5 w-5" />
                     </AvatarFallback>
                   </Avatar>
                 </Button>
