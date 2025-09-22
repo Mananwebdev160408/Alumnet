@@ -18,8 +18,7 @@ import {
 } from "@/components/ui/select";
 import { GraduationCap, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import axios from "axios";
-
+import {api} from "../../../axios.js"
 const graduationYears = Array.from({ length: 50 }, (_, i) => 2024 - i);
 
 export const Signup = () => {
@@ -27,7 +26,7 @@ export const Signup = () => {
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: "",
-    emailaddress: "",
+    email: "",
     password: "",
     graduationYear: "",
     branch: "",
@@ -39,8 +38,8 @@ export const Signup = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const axiosres = await axios.post(
-      "http://localhost:5173/api/v1/users/register",
+    const axiosres = await api.post(
+      "/users/register",
       formData
     );
     if (axiosres) {
@@ -58,7 +57,7 @@ export const Signup = () => {
         title: "Account created!",
         description: "Welcome to Alumnet. Please complete your profile.",
       });
-      navigate("/profile");
+      navigate("/auth/login");
       setIsLoading(false);
     }, 1500);
   };
@@ -105,13 +104,13 @@ export const Signup = () => {
               />
 
               <FormInput
-                label="emailaddress"
-                name="emailaddress"
-                type="emailaddress"
-                value={formData.emailaddress}
+                label="email"
+                name="email"
+                type="email"
+                value={formData.email}
                 onChange={handleChange}
                 placeholder="john@university.edu"
-                helperText="Use your university emailaddress for verification"
+                helperText="Use your university email for verification"
                 required
               />
 

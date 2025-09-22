@@ -14,7 +14,7 @@ import { Directory } from "./pages/Directory";
 import { Connections } from "./pages/Connections";
 import { Messages } from "./pages/Messages";
 import { Mentorship } from "./pages/Mentorship";
-
+import { AIChat } from "./pages/AIChat";
 
 // Auth pages
 import { Login } from "./pages/auth/Login";
@@ -38,6 +38,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/directory" element={<Directory />} />
+             <Route path="/ai-chat" element={<AIChat />} />
             <Route path="/" element={<Index/>} />
             <Route path="/messages" element={<Messages />} />
             <Route path="/alumni/:id" element={<AlumnetProfilePage/>}/>

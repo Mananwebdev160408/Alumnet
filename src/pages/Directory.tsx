@@ -1,55 +1,104 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Filter, MapPin, Briefcase, GraduationCap, Users, UserPlus, University } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Search,
+  Filter,
+  MapPin,
+  Briefcase,
+  GraduationCap,
+  Users,
+  UserPlus,
+  University,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import mockAlumni from "@/data.json";
 import { useNavigate } from "react-router-dom";
+import { api } from "../../axios.js";
 
 // Mock data - replace with real API
 
-
-const graduationYears = Array.from({ length: 20 }, (_, i) => (2024 - i).toString());
-const branchs = ["Computer Science", "Business Administration", "Statistics", "Design", "Marketing", "Engineering"];
-const locations = ["Mountain View, CA", "Menlo Park, CA", "Los Angeles, CA", "Cupertino, CA", "New York, NY", "Campus, CA"];
+const graduationYears = Array.from({ length: 20 }, (_, i) =>
+  (2024 - i).toString()
+);
 
 export const Directory = () => {
+  const [alumniData, setAlumniData] = useState([]);
+  const branchs = useMemo(
+    () => Array.from(new Set(alumniData.map((person) => person.branch))),
+    [alumniData]
+  );
+  const locations = useMemo(
+    () => Array.from(new Set(alumniData.map((person) => person.location))),
+    [alumniData]
+  );
+
+  const fetchalumni = async () => {
+    try {
+      const response = await api.get("/users/getallusers");
+      console.log(response.data);
+      setAlumniData(response.data.message);
+    } catch (error) {
+      console.error("Error fetching alumni data:", error);
+    }
+  };
+  useEffect(() => {
+    fetchalumni();
+  }, []);
+
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({
     graduationYear: "",
     branch: "",
-    location: ""
+    location: "",
   });
-  const [alumni, setAlumni] = useState(mockAlumni);
 
   const filteredAlumni = useMemo(() => {
-    return alumni.filter(person => {
-      const matchesSearch = person.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           person.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           person.occupation.toLowerCase().includes(searchQuery.toLowerCase())||
-                           person.college.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      const matchesYear = filters.graduationYear === "all" || !filters.graduationYear || person.graduationYear === filters.graduationYear;
-      const matchesbranch = filters.branch === "all" || !filters.branch || person.branch === filters.branch;
-      const matchesLocation = filters.location === "all" || !filters.location || person.location === filters.location;
-      
+    return alumniData.filter((person) => {
+      const matchesSearch =
+        person.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        person.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        person.occupation.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        person.college.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesYear =
+        filters.graduationYear === "all" ||
+        !filters.graduationYear ||
+        person.graduationYear === filters.graduationYear;
+      const matchesbranch =
+        filters.branch === "all" ||
+        !filters.branch ||
+        person.branch === filters.branch;
+      const matchesLocation =
+        filters.location === "all" ||
+        !filters.location ||
+        person.location === filters.location;
+
       return matchesSearch && matchesYear && matchesbranch && matchesLocation;
     });
-  }, [alumni, searchQuery, filters]);
+  }, [alumniData, searchQuery, filters]);
 
   const handleConnect = (personId: number) => {
-    setAlumni(prev => prev.map(person => 
-      person._id === personId 
-        ? { ...person, connectionStatus: "pending" }
-        : person
-    ));
-    
+    setAlumniData((prev) =>
+      prev.map((person) =>
+        person._id === personId
+          ? { ...person, connectionStatus: "pending" }
+          : person
+      )
+    );
+
     toast({
       title: "Connection request sent!",
       description: "Your connection request has been sent successfully.",
@@ -60,7 +109,7 @@ export const Directory = () => {
     setFilters({
       graduationYear: "all",
       branch: "all",
-      location: "all"
+      location: "all",
     });
     setSearchQuery("");
   };
@@ -71,7 +120,8 @@ export const Directory = () => {
       <div>
         <h1 className="text-3xl font-bold text-gradient">Alumni Directory</h1>
         <p className="text-muted-foreground mt-2">
-          Connect with {filteredAlumni.length} alumni and students from your university
+          Connect with {filteredAlumni.length} alumni and students from your
+          university
         </p>
       </div>
 
@@ -94,45 +144,57 @@ export const Directory = () => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Select
                 value={filters.graduationYear}
-                onValueChange={(value) => setFilters(prev => ({ ...prev, graduationYear: value }))}
+                onValueChange={(value) =>
+                  setFilters((prev) => ({ ...prev, graduationYear: value }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Graduation Year" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Years</SelectItem>
-                  {graduationYears.map(year => (
-                    <SelectItem key={year} value={year}>{year}</SelectItem>
+                  {graduationYears.map((year) => (
+                    <SelectItem key={year} value={year}>
+                      {year}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
               <Select
                 value={filters.branch}
-                onValueChange={(value) => setFilters(prev => ({ ...prev, branch: value }))}
+                onValueChange={(value) =>
+                  setFilters((prev) => ({ ...prev, branch: value }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="branch/Department" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All branchs</SelectItem>
-                  {branchs.map(branch => (
-                    <SelectItem key={branch} value={branch}>{branch}</SelectItem>
+                  {branchs.map((branch) => (
+                    <SelectItem key={branch} value={branch}>
+                      {branch}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
               <Select
                 value={filters.location}
-                onValueChange={(value) => setFilters(prev => ({ ...prev, location: value }))}
+                onValueChange={(value) =>
+                  setFilters((prev) => ({ ...prev, location: value }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Location" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Locations</SelectItem>
-                  {locations.map(location => (
-                    <SelectItem key={location} value={location}>{location}</SelectItem>
+                  {locations.map((location) => (
+                    <SelectItem key={location} value={location}>
+                      {location}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -149,13 +211,21 @@ export const Directory = () => {
       {/* Results */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredAlumni.map((person) => (
-          <Card key={person._id} className="hover-lift transition-all duration-200">
+          <Card
+            key={person._id}
+            className="hover-lift transition-all duration-200"
+          >
             <CardContent className="p-6">
               <div className="text-center space-y-4">
                 <Avatar className="h-20 w-20 mx-auto">
-                  <AvatarImage src={`/placeholder-${person._id}.jpg`} />
                   <AvatarFallback className="text-lg bg-primary text-primary-foreground">
-                    {person.avatar}
+                    {person.name
+                      ? person.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                          .toUpperCase()
+                      : "NA"}
                   </AvatarFallback>
                 </Avatar>
 
@@ -169,7 +239,9 @@ export const Directory = () => {
                 <div className="flex flex-wrap justify-center gap-2">
                   <Badge variant="secondary" className="text-xs">
                     <GraduationCap className="mr-1 h-3 w-3" />
-                    {person.graduationYear === "2025" ? "Current Student" : `Class of ${person.graduationYear}`}
+                    {person.graduationYear === "2025"
+                      ? "Current Student"
+                      : `Class of ${person.graduationYear}`}
                   </Badge>
                   <Badge variant="secondary" className="text-xs">
                     <University className="mr-1 h-3 w-3" />
@@ -177,7 +249,7 @@ export const Directory = () => {
                   </Badge>
                   <Badge variant="outline" className="text-xs">
                     <MapPin className="mr-1 h-3 w-3" />
-                    {person.location.split(',')[0]}
+                    {person.location.split(",")[0]}
                   </Badge>
                 </div>
 
@@ -186,9 +258,10 @@ export const Directory = () => {
                 </p>
 
                 <div className="flex w-full justify-between items-center jusb space-x-2">
-           
-
-                  <Button className="w-full" onClick={()=>navigate(`/alumni/${person._id}`)}>
+                  <Button
+                    className="w-full"
+                    onClick={() => navigate(`/alumni/${person._id}`)}
+                  >
                     View Profile
                   </Button>
                 </div>

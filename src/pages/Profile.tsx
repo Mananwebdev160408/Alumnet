@@ -1,4 +1,4 @@
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {api} from "../../axios.js"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { FormInput } from "@/components/ui/form-input";
@@ -27,6 +28,7 @@ import {
   Save,
   X,
   User,
+  Loader2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -36,39 +38,136 @@ export const Profile = () => {
   const { toast } = useToast();
   
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [profileData, setProfileData] = useState({
-    name: "John Doe",
-    email: "john.doe@university.edu",
-    graduationYear: "2020",
-    branch: "Computer Science",
-    occupation: "Senior Software Engineer",
-    company: "Tech Corp",
-    location: "San Francisco, CA",
-    bio: "Passionate software engineer with 4+ years of experience in full-stack development. Love mentoring students and contributing to open source projects.",
-    skills: ["JavaScript", "React", "Node.js", "Python", "AWS"],
-    linkedin: "linkedin.com/in/johndoe",
-    website: "johndoe.dev",
-    role: "Student",
+    id: "",
+    name: "",
+    email: "",
+    graduationYear: "",
+    branch: "",
+    occupation: "",
+    company: "",
+    location: "",
+    description: "",
+    linkedin: "",
+    personalwebsite: "",
+    role: "",
+    college: "",
   });
 
-  const handleSave = () => {
-    // Mock save - replace with real API call
-    toast({
-      title: "Profile updated!",
-      description: "Your profile has been successfully updated.",
-    });
-    setIsEditing(false);
+  // Fetch current user data when component mounts
+  useEffect(() => {
+    fetchCurrentUser();
+  }, []);
+
+  const fetchCurrentUser = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get("/users/getuser")
+      
+      if (response.data && response.data.data) {
+        const userData = response.data.data;
+        setProfileData({
+          id: userData._id || "",
+          name: userData.name || "",
+          email: userData.email || "",
+          graduationYear: userData.graduationYear?.toString() || "",
+          branch: userData.branch || "",
+          occupation: userData.occupation || "",
+          company: userData.company || "",
+          location: userData.location || "",
+          description: userData.description || "",
+          linkedin: userData.linkedin || "",
+          personalwebsite: userData.personalwebsite || "",
+          role: userData.role || "",
+          college: userData.college || "",
+        });
+      }
+      console.log(response.data);
+      
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load profile data. Please try again.",
+        variant: "destructive",
+      });
+      
+      // If unauthorized, redirect to login
+      if (error.response?.status === 401 || error.response?.status === 404) {
+        // Redirect to login page or handle authentication error
+        window.location.href = '/auth/login'; // Adjust this based on your routing
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleChange = (field: string, value: string) => {
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      
+      const updateData = {
+        id: profileData.id,
+        name: profileData.name,
+        email: profileData.email,
+        graduationYear: parseInt(profileData.graduationYear),
+        branch: profileData.branch,
+        occupation: profileData.occupation,
+        company: profileData.company,
+        location: profileData.location,
+        description: profileData.description,
+        linkedin: profileData.linkedin,
+        personalwebsite: profileData.personalwebsite,
+        role: profileData.role,
+        college: profileData.college,
+      };
+
+      const response= await api.put(`/users/updateuser/${profileData.id}`, updateData)
+
+      if (response.data) {
+        toast({
+          title: "Profile updated!",
+          description: "Your profile has been successfully updated.",
+        });
+        setIsEditing(false);
+        // Optionally refresh the data from server
+        await fetchCurrentUser();
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleChange = (field, value) => {
     setProfileData((prev) => ({
       ...prev,
       [field]: value,
     }));
   };
 
+  // Show loading spinner while fetching data
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center w-full h-full">
+        <div className="flex items-center space-x-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Loading profile...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex justify-center items-center w-full  h-full ">
+    <div className="flex justify-center items-center w-full h-full">
       <div className="max-w-4xl space-y-8">
         {/* Profile Header */}
         <Card>
@@ -78,34 +177,47 @@ export const Profile = () => {
                 <AvatarImage src="/placeholder-profile.jpg" />
                 <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
                   {profileData.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
+                    ? profileData.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                    : "U"}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <h1 className="text-3xl font-bold">{profileData.name}</h1>
+                <h1 className="text-3xl font-bold">
+                  {profileData.name || "User Name"}
+                </h1>
                 <p className="text-xl text-muted-foreground mt-1">
-                  {profileData.occupation} at {profileData.company}
+                  {profileData.occupation && profileData.company
+                    ? `${profileData.occupation} at ${profileData.company}`
+                    : profileData.occupation || "No occupation specified"}
                 </p>
                 <div className="flex flex-wrap items-center gap-4 mt-3">
-                  <Badge variant="secondary" className="flex items-center">
-                    <GraduationCap className="mr-1 h-3 w-3" />
-                    Class of {profileData.graduationYear}
-                  </Badge>
-                  <Badge variant="secondary" className="flex items-center">
-                    <User className="mr-1 h-3 w-3" />
-                    {profileData.role}
-                  </Badge>
-                  <Badge variant="outline" className="flex items-center">
-                    <MapPin className="mr-1 h-3 w-3" />
-                    {profileData.location}
-                  </Badge>
+                  {profileData.graduationYear && (
+                    <Badge variant="secondary" className="flex items-center">
+                      <GraduationCap className="mr-1 h-3 w-3" />
+                      Class of {profileData.graduationYear}
+                    </Badge>
+                  )}
+                  {profileData.role && (
+                    <Badge variant="secondary" className="flex items-center">
+                      <User className="mr-1 h-3 w-3" />
+                      {profileData.role}
+                    </Badge>
+                  )}
+                  {profileData.location && (
+                    <Badge variant="outline" className="flex items-center">
+                      <MapPin className="mr-1 h-3 w-3" />
+                      {profileData.location}
+                    </Badge>
+                  )}
                 </div>
               </div>
               <Button
                 onClick={() => setIsEditing(!isEditing)}
                 variant={isEditing ? "outline" : "default"}
+                disabled={saving}
               >
                 {isEditing ? (
                   <>
@@ -135,13 +247,13 @@ export const Profile = () => {
                   <FormInput
                     multiline
                     rows={4}
-                    value={profileData.bio}
-                    onChange={(e) => handleChange("bio", e.target.value)}
+                    value={profileData.description}
+                    onChange={(e) => handleChange("description", e.target.value)}
                     placeholder="Tell us about yourself..."
                   />
                 ) : (
                   <p className="text-muted-foreground leading-relaxed">
-                    {profileData.bio}
+                    {profileData.description || "No description provided."}
                   </p>
                 )}
               </CardContent>
@@ -175,19 +287,36 @@ export const Profile = () => {
                       value={profileData.location}
                       onChange={(e) => handleChange("location", e.target.value)}
                     />
+                    <FormInput
+                      label="College"
+                      value={profileData.college}
+                      onChange={(e) => handleChange("college", e.target.value)}
+                    />
                   </>
                 ) : (
                   <>
-                    <div className="flex items-center space-x-3">
-                      <Briefcase className="h-5 w-5 text-muted-foreground" />
-                      <span>
-                        {profileData.occupation} at {profileData.company}
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <MapPin className="h-5 w-5 text-muted-foreground" />
-                      <span>{profileData.location}</span>
-                    </div>
+                    {(profileData.occupation || profileData.company) && (
+                      <div className="flex items-center space-x-3">
+                        <Briefcase className="h-5 w-5 text-muted-foreground" />
+                        <span>
+                          {profileData.occupation && profileData.company
+                            ? `${profileData.occupation} at ${profileData.company}`
+                            : profileData.occupation || profileData.company}
+                        </span>
+                      </div>
+                    )}
+                    {profileData.location && (
+                      <div className="flex items-center space-x-3">
+                        <MapPin className="h-5 w-5 text-muted-foreground" />
+                        <span>{profileData.location}</span>
+                      </div>
+                    )}
+                    {profileData.college && (
+                      <div className="flex items-center space-x-3">
+                        <GraduationCap className="h-5 w-5 text-muted-foreground" />
+                        <span>{profileData.college}</span>
+                      </div>
+                    )}
                   </>
                 )}
               </CardContent>
@@ -220,17 +349,19 @@ export const Profile = () => {
                       onChange={(e) => handleChange("linkedin", e.target.value)}
                     />
                     <FormInput
-                      label="Website"
-                      value={profileData.website}
-                      onChange={(e) => handleChange("website", e.target.value)}
+                      label="Personal Website"
+                      value={profileData.personalwebsite}
+                      onChange={(e) => handleChange("personalwebsite", e.target.value)}
                     />
                   </>
                 ) : (
                   <>
-                    <div className="flex items-center space-x-3">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">{profileData.email}</span>
-                    </div>
+                    {profileData.email && (
+                      <div className="flex items-center space-x-3">
+                        <Mail className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">{profileData.email}</span>
+                      </div>
+                    )}
                     {profileData.linkedin && (
                       <div>
                         <a
@@ -243,10 +374,10 @@ export const Profile = () => {
                         </a>
                       </div>
                     )}
-                    {profileData.website && (
+                    {profileData.personalwebsite && (
                       <div>
                         <a
-                          href={`https://${profileData.website}`}
+                          href={`https://${profileData.personalwebsite}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-sm text-primary hover:text-primary-dark transition-colors"
@@ -278,7 +409,7 @@ export const Profile = () => {
                         }
                       >
                         <SelectTrigger>
-                          <SelectValue />
+                          <SelectValue placeholder="Select graduation year" />
                         </SelectTrigger>
                         <SelectContent>
                           {graduationYears.map((year) => (
@@ -290,31 +421,50 @@ export const Profile = () => {
                       </Select>
                     </div>
                     <FormInput
-                      label="branch/Department"
+                      label="Branch/Department"
                       value={profileData.branch}
                       onChange={(e) => handleChange("branch", e.target.value)}
                     />
                   </>
                 ) : (
                   <>
-                    <div className="flex items-center space-x-3">
-                      <GraduationCap className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium">{profileData.branch}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Class of {profileData.graduationYear}
-                        </p>
+                    {(profileData.branch || profileData.graduationYear) && (
+                      <div className="flex items-center space-x-3">
+                        <GraduationCap className="h-4 w-4 text-muted-foreground" />
+                        <div>
+                          {profileData.branch && (
+                            <p className="font-medium">{profileData.branch}</p>
+                          )}
+                          {profileData.graduationYear && (
+                            <p className="text-sm text-muted-foreground">
+                              Class of {profileData.graduationYear}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </>
                 )}
               </CardContent>
             </Card>
 
             {isEditing && (
-              <Button onClick={handleSave} className="w-full">
-                <Save className="mr-2 h-4 w-4" />
-                Save Changes
+              <Button 
+                onClick={handleSave} 
+                className="w-full" 
+                disabled={saving}
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Save Changes
+                  </>
+                )}
               </Button>
             )}
           </div>

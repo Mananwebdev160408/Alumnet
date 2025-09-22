@@ -1,4 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Moon, Sun } from "lucide-react";
 import { EnhancedButton } from "@/components/ui/enhanced-button";
 import {
   Card,
@@ -15,9 +17,23 @@ import {
   ArrowRight,
   Star,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const navigate = useNavigate();
+  const toggleTheme = () => {
+    if (isDark) {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+      setIsDark(false);
+    } else {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+      setIsDark(true);
+    }
+  };
+
+  const [isDark, setIsDark] = useState(false);
   const features = [
     {
       icon: Users,
@@ -48,7 +64,38 @@ const Index = () => {
   return (
     <>
       {/* Hero Section */}
-      <div className="bg-gradient-to-tr from-blue-500 via-blue-900 to-blue-500 ">
+      <div className="bg-gradient-to-tr from-blue-500 via-blue-900 to-blue-500 pt-4 ">
+        <div className="navbar rounded-full py-4 px-7 w-[95%] mx-auto shadow-lg flex justify-between  bg-white/50 backdrop-blur-sm">
+          <Link to="/" className="flex items-center space-x-2">
+            <div className="bg-primary p-2 rounded-lg">
+              <GraduationCap className="h-6 w-6 text-primary-foreground" />
+            </div>
+            <span className="text-xl font-bold text-gradient">Alumnet</span>
+          </Link>
+          <div className="flex justify-between flex-row-reverse w-[10%] items-center">
+            <button
+              onClick={toggleTheme}
+              className="relative inline-flex items-center justify-center w-14 h-8 bg-gray-200 dark:bg-gray-700 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+              aria-label={
+                isDark ? "Switch to light mode" : "Switch to dark mode"
+              }
+            >
+              {/* Toggle Circle */}
+              <span
+                className={`absolute w-6 h-6 bg-white dark:bg-gray-200 rounded-full shadow-md transform transition-transform duration-300 flex items-center justify-center ${
+                  isDark ? "translate-x-3" : "-translate-x-3"
+                }`}
+              >
+                {isDark ? (
+                  <Moon className="w-3 h-3 text-gray-700" />
+                ) : (
+                  <Sun className="w-3 h-3 text-yellow-500" />
+                )}
+              </span>
+            </button>
+            <Button onClick={() => navigate("/auth/login")}>Login</Button>
+          </div>
+        </div>
         <section className="relative  min-h-screen flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
           <div className="container mx-auto px-4 text-center relative z-10">

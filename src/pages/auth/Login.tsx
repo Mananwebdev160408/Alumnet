@@ -5,13 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { FormInput } from "@/components/ui/form-input";
 import { GraduationCap, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import axios from "axios";
+import {api} from "../../../axios.js"
 
 export const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
-    emailaddress: "",
+    email: "",
     password: ""
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -21,7 +21,7 @@ export const Login = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const res = await axios.post("/api/v1/auth/login", formData);
+      const res = await api.post("/users/login", formData);
       if (res.data.success) {
         toast({
           title: "Welcome back!",
@@ -74,7 +74,7 @@ export const Login = () => {
                 label="Email"
                 name="email"
                 type="email"
-                value={formData.emailaddress}
+                value={formData.email}
                 onChange={handleChange}
                 placeholder="john@university.edu"
                 required

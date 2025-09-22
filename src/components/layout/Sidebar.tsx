@@ -6,8 +6,10 @@ import {
   UserCheck, 
   GraduationCap, 
   User,
-  Home
+  Home,
+  Bot
 } from "lucide-react";
+import { useState } from "react";
 
 const navigation = [
   { name: "Directory", href: "/directory", icon: Users },
@@ -16,15 +18,21 @@ const navigation = [
   // { name: "Connections", href: "/connections", icon: UserCheck },
   { name: "Messages", href: "/messages", icon: MessageCircle },
   // { name: "Mentorship", href: "/mentorship", icon: GraduationCap },
+  { name: "AI Chat", href: "/ai-chat", icon: Bot },
 ];
+
 
 export const Sidebar = () => {
   const location = useLocation();
 
+  
   // Don't show sidebar on auth pages
   if (location.pathname.startsWith('/auth')) {
     return null;
   }
+
+  
+  const [user, setuser] = useState();
 
   return (
     <div className="hidden md:fixed md:inset-y-0 md:flex md:w-64 md:flex-col md:pt-16">
