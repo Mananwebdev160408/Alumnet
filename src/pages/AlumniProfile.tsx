@@ -68,16 +68,22 @@ const AlumniProfilePage = () => {
   };
 
 
-  const datamanagement=async()=>{
-    const alumniresponse=await fetchAlumni()
-    const profileResponse=await fetchProfile(id || "")
-    setMockAlumni(alumniresponse?.data.message || [])
-    setProfile(profileResponse?.data.message || null)
-  }
+ const datamanagement = async () => {
+  const alumniresponse = await fetchAlumni();
+  const profileResponse = await fetchProfile(id || "");
 
+  // Fix based on API shape:
+  setMockAlumni(alumniresponse?.data?.message || alumniresponse?.data || []); 
+
+  setProfile(
+    profileResponse?.data?.user || profileResponse?.data?.message || profileResponse?.data || null
+  );
+};
   
   useEffect(() => {
     datamanagement()
+    console.log("Profile data:", profile);
+    console.log("Mock Alumni data:", mockAlumni);
   }, [id]);
 
   const handleBackToDirectory = () => {
