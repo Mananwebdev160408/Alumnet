@@ -7,18 +7,20 @@ import {
   GraduationCap, 
   User,
   Home,
-  Bot
+  Bot,
+  Info
 } from "lucide-react";
 import { useState } from "react";
 
 const navigation = [
   { name: "Directory", href: "/directory", icon: Users },
   { name: "Profile", href: "/profile", icon: User },
+  { name: "AI Chat", href: "/ai-chat", icon: Bot },
+  { name: "About", href: "/about", icon: Info },
   { name: "Dashboard", href: "/dashboard", icon: Home },
   // { name: "Connections", href: "/connections", icon: UserCheck },
   { name: "Messages", href: "/messages", icon: MessageCircle },
   // { name: "Mentorship", href: "/mentorship", icon: GraduationCap },
-  { name: "AI Chat", href: "/ai-chat", icon: Bot },
 ];
 
 

@@ -16,6 +16,7 @@ import {
   BookOpen,
   ArrowRight,
   Star,
+  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -65,14 +66,18 @@ const Index = () => {
     <>
       {/* Hero Section */}
       <div className="bg-gradient-to-tr from-blue-500 via-blue-900 to-blue-500 pt-4 ">
-        <div className="navbar rounded-full py-4 px-7 w-[95%] mx-auto shadow-lg flex justify-between  bg-white/50 backdrop-blur-sm">
+        <div className="navbar rounded-full py-4 px-5 w-[95%] max-w-7xl mx-auto shadow-lg flex items-center justify-between bg-white/50 backdrop-blur-sm">
+          {/* Left - Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <div className="bg-primary p-2 rounded-lg">
               <GraduationCap className="h-6 w-6 text-primary-foreground" />
             </div>
             <span className="text-xl font-bold text-gradient">Alumnet</span>
           </Link>
-          <div className="flex justify-between flex-row-reverse w-[10%] items-center">
+
+          {/* Right - Actions */}
+          <div className="flex items-center gap-3">
+            {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
               className="relative inline-flex items-center justify-center w-14 h-8 bg-gray-200 dark:bg-gray-700 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
@@ -80,7 +85,6 @@ const Index = () => {
                 isDark ? "Switch to light mode" : "Switch to dark mode"
               }
             >
-              {/* Toggle Circle */}
               <span
                 className={`absolute w-6 h-6 bg-white dark:bg-gray-200 rounded-full shadow-md transform transition-transform duration-300 flex items-center justify-center ${
                   isDark ? "translate-x-3" : "-translate-x-3"
@@ -93,9 +97,25 @@ const Index = () => {
                 )}
               </span>
             </button>
-            <Button onClick={() => navigate("/auth/login")}>Login</Button>
+
+            {/* Login Button */}
+            <Button
+              onClick={() => navigate("/auth/login")}
+              className="hidden sm:inline-flex"
+            >
+              Login
+            </Button>
+
+            {/* Mobile Menu (Login icon instead of text) */}
+            <button
+              onClick={() => navigate("/auth/login")}
+              className="sm:hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              <User className="h-5 w-5" />
+            </button>
           </div>
         </div>
+
         <section className="relative  min-h-screen flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
           <div className="container mx-auto px-4 text-center relative z-10">
