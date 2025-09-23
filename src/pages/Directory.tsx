@@ -26,20 +26,14 @@ import mockAlumni from "@/data.json";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../axios.js";
 
-// Mock data - replace with real API
-
-const graduationYears = Array.from({ length: 20 }, (_, i) =>
-  (2024 - i).toString()
-);
-
 export const Directory = () => {
   const [alumniData, setAlumniData] = useState([]);
   const branchs = useMemo(
-    () => Array.from(new Set(alumniData.map((person) => person.branch))),
+    () => Array.from(new Set(alumniData.map((person) => person.branch).filter(Boolean))),
     [alumniData]
   );
   const locations = useMemo(
-    () => Array.from(new Set(alumniData.map((person) => person.location))),
+    () => Array.from(new Set(alumniData.map((person) => person.location).filter(Boolean))),
     [alumniData]
   );
 
@@ -52,6 +46,7 @@ export const Directory = () => {
       console.error("Error fetching alumni data:", error);
     }
   };
+  
   useEffect(() => {
     fetchalumni();
   }, []);
@@ -59,50 +54,52 @@ export const Directory = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState({
-    graduationYear: "",
-    branch: "",
-    location: "",
-  });
-
-const filteredAlumni = useMemo(() => {
-  return alumniData.filter((person) => {
-    const matchesSearch =
-      person.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      person.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      person.occupation.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      person.college.toLowerCase().includes(searchQuery.toLowerCase());
-
-    // Fix graduation year comparison by converting both to strings
-    const matchesYear =
-      filters.graduationYear === "all" ||
-      !filters.graduationYear ||
-      String(person.graduationYear) === String(filters.graduationYear);
-      
-    const matchesbranch =
-      filters.branch === "all" ||
-      !filters.branch ||
-      person.branch === filters.branch;
-      
-    const matchesLocation =
-      filters.location === "all" ||
-      !filters.location ||
-      person.location === filters.location;
-
-    return matchesSearch && matchesYear && matchesbranch && matchesLocation;
-  });
-}, [alumniData, searchQuery, filters]);
-
-// Also, make sure your graduationYears array matches your data format:
-const graduationYears = useMemo(() => {
-  // Get unique graduation years from actual data
-  const years = Array.from(new Set(
-    alumniData.map(person => String(person.graduationYear))
-  )).sort((a, b) => parseInt(b) - parseInt(a)); // Sort in descending order
   
-  return years;
-}, [alumniData]);
+  // Fix: Initialize filters with "all" instead of empty strings
+  const [filters, setFilters] = useState({
+    graduationYear: "all",
+    branch: "all",
+    location: "all",
+  });
 
+  const filteredAlumni = useMemo(() => {
+    return alumniData.filter((person) => {
+      const matchesSearch =
+        person.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        person.company?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        person.occupation?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        person.college?.toLowerCase().includes(searchQuery.toLowerCase());
+
+      // Fix graduation year comparison by converting both to strings
+      const matchesYear =
+        filters.graduationYear === "all" ||
+        !filters.graduationYear ||
+        String(person.graduationYear) === String(filters.graduationYear);
+        
+      const matchesbranch =
+        filters.branch === "all" ||
+        !filters.branch ||
+        person.branch === filters.branch;
+        
+      const matchesLocation =
+        filters.location === "all" ||
+        !filters.location ||
+        person.location === filters.location;
+
+      return matchesSearch && matchesYear && matchesbranch && matchesLocation;
+    });
+  }, [alumniData, searchQuery, filters]);
+
+  // Get unique graduation years from actual data:
+  const graduationYears = useMemo(() => {
+    const years = Array.from(new Set(
+      alumniData
+        .map(person => String(person.graduationYear))
+        .filter(year => year && year !== 'undefined' && year !== 'null')
+    )).sort((a, b) => parseInt(b) - parseInt(a)); // Sort in descending order
+    
+    return years;
+  }, [alumniData]);
 
   const handleConnect = (personId: number) => {
     setAlumniData((prev) =>
@@ -119,6 +116,7 @@ const graduationYears = useMemo(() => {
     });
   };
 
+  // Fix: Ensure clearFilters sets "all" values, not empty strings
   const clearFilters = () => {
     setFilters({
       graduationYear: "all",
@@ -167,7 +165,7 @@ const graduationYears = useMemo(() => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Years</SelectItem>
-                  {graduationYears.map((year) => (
+                  {graduationYears.filter(year => year && year.trim() !== '').map((year) => (
                     <SelectItem key={year} value={year}>
                       {year}
                     </SelectItem>
@@ -182,11 +180,11 @@ const graduationYears = useMemo(() => {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="branch/Department" />
+                  <SelectValue placeholder="Branch/Department" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All branchs</SelectItem>
-                  {branchs.map((branch) => (
+                  <SelectItem value="all">All Branches</SelectItem>
+                  {branchs.filter(branch => branch && branch.trim() !== '').map((branch) => (
                     <SelectItem key={branch} value={branch}>
                       {branch}
                     </SelectItem>
@@ -205,7 +203,7 @@ const graduationYears = useMemo(() => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Locations</SelectItem>
-                  {locations.map((location) => (
+                  {locations.filter(location => location && location.trim() !== '').map((location) => (
                     <SelectItem key={location} value={location}>
                       {location}
                     </SelectItem>
@@ -263,7 +261,7 @@ const graduationYears = useMemo(() => {
                   </Badge>
                   <Badge variant="outline" className="text-xs">
                     <MapPin className="mr-1 h-3 w-3" />
-                    {person.location.split(",")[0]}
+                    {person.location?.split(",")[0]}
                   </Badge>
                 </div>
 
@@ -271,7 +269,7 @@ const graduationYears = useMemo(() => {
                   {person.bio}
                 </p>
 
-                <div className="flex w-full justify-between items-center jusb space-x-2">
+                <div className="flex w-full justify-between items-center space-x-2">
                   <Button
                     className="w-full"
                     onClick={() => navigate(`/alumni/${person._id}`)}

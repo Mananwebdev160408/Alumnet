@@ -19,7 +19,7 @@ import {
 import { GraduationCap, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {api} from "../../../axios.js"
-const graduationYears = Array.from({ length: 50 }, (_, i) => 2024 - i);
+const graduationYears = Array.from({ length: 50 }, (_, i) => 2029 - i);
 
 export const Signup = () => {
   const navigate = useNavigate();

@@ -26,8 +26,8 @@ type Alumni = {
   graduationYear?: string;
   location?: string;
   email?: string;
-  linkedinProfile?: string;
-  personalWebsite?: string;
+  linkedin?: string;
+  personalwebsite?: string;
   branch?: string;
   bio?: string;
 };
@@ -284,11 +284,11 @@ const AlumniProfilePage = () => {
                     </div>
                   )}
 
-                  {profile.linkedinProfile && (
+                  {profile.linkedin && (
                     <div className="flex items-center">
                       <ExternalLink className="h-4 w-4 text-muted-foreground mr-3" />
                       <a 
-                        href={profile.linkedinProfile} 
+                        href={profile.linkedin} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="text-blue-600 hover:text-blue-800 text-sm"
@@ -298,11 +298,11 @@ const AlumniProfilePage = () => {
                     </div>
                   )}
                   
-                  {profile.personalWebsite && (
+                  {profile.personalwebsite && (
                     <div className="flex items-center">
                       <ExternalLink className="h-4 w-4 text-muted-foreground mr-3" />
                       <a 
-                        href={profile.personalWebsite} 
+                        href={profile.personalwebsite} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="text-blue-600 hover:text-blue-800 text-sm"
