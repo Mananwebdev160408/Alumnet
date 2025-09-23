@@ -129,44 +129,31 @@ export const Messages = () => {
   );
 
   return (
-    <>
+    <div className="relative">
       {/* Coming Soon Overlay */}
-      <div className="absolute inset-0 bg-background/60 w-full h-full lg:w-[calc(100vw-17rem)] lg:h-[calc(100vh-5rem)] lg:mt-[5rem] lg:ml-[20rem] backdrop-blur-md flex items-center justify-center z-50">
+      <div className="absolute inset-0 bg-background/60 backdrop-blur-md flex items-center justify-center z-50">
         <div className="text-center space-y-2 p-4">
           <h2 className="text-xl md:text-2xl font-bold">Coming Soon 🚀</h2>
           <p className="text-sm md:text-base text-muted-foreground">This feature will be available in a future update</p>
         </div>
       </div>
 
-      <div className="h-screen lg:h-[calc(100vh-8rem)] flex bg-background">
-        {/* Mobile Menu Button */}
-        <div className="lg:hidden fixed top-4 left-4 z-40">
-          {!showConversationList && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleBackToConversations}
-              className="bg-background/80 backdrop-blur-sm border"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          )}
-        </div>
-
+      {/* Main Messages Container - Responsive to navbar and sidebar */}
+      <div className="h-[calc(100vh-4rem)] md:h-[calc(100vh-4rem)] md:ml-0 flex bg-background">
         {/* Conversations List */}
         <div className={cn(
-          "w-full lg:w-80 border-r border-border transition-transform duration-300 ease-in-out",
-          "lg:translate-x-0 lg:relative lg:block",
-          showConversationList ? "translate-x-0" : "-translate-x-full absolute lg:relative"
+          "w-full md:w-80 border-r border-border transition-transform duration-300 ease-in-out",
+          "md:translate-x-0 md:relative md:block",
+          showConversationList ? "translate-x-0" : "-translate-x-full absolute md:relative z-30"
         )}>
           <Card className="h-full rounded-none border-0">
-            <CardHeader className="pb-3 pt-4 lg:pt-6">
-              <div className="flex items-center justify-between lg:justify-start">
-                <h2 className="text-lg lg:text-xl font-semibold">Messages</h2>
+            <CardHeader className="pb-3 pt-4 md:pt-6">
+              <div className="flex items-center justify-between md:justify-start">
+                <h2 className="text-lg md:text-xl font-semibold">Messages</h2>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="lg:hidden"
+                  className="md:hidden"
                   onClick={() => setShowConversationList(false)}
                 >
                   <Menu className="h-5 w-5" />
@@ -182,20 +169,20 @@ export const Messages = () => {
                 />
               </div>
             </CardHeader>
-            <CardContent className="p-0">
+            <CardContent className="p-0 overflow-y-auto flex-1">
               <div className="space-y-1">
                 {filteredConversations.map((conversation) => (
                   <div
                     key={conversation.id}
                     onClick={() => handleConversationSelect(conversation)}
                     className={cn(
-                      "p-3 lg:p-4 cursor-pointer hover:bg-muted/50 transition-colors",
+                      "p-3 md:p-4 cursor-pointer hover:bg-muted/50 transition-colors",
                       selectedConversation.id === conversation.id && "bg-muted"
                     )}
                   >
                     <div className="flex items-center space-x-3">
                       <div className="relative">
-                        <Avatar className="h-10 w-10 lg:h-12 lg:w-12">
+                        <Avatar className="h-10 w-10 md:h-12 md:w-12">
                           <AvatarImage src={`/placeholder-${conversation.id}.jpg`} />
                           <AvatarFallback className="bg-primary text-primary-foreground text-sm">
                             {conversation.avatar}
@@ -208,11 +195,11 @@ export const Messages = () => {
                       
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <h4 className="font-medium truncate text-sm lg:text-base">{conversation.name}</h4>
+                          <h4 className="font-medium truncate text-sm md:text-base">{conversation.name}</h4>
                           <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">{conversation.timestamp}</span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <p className="text-xs lg:text-sm text-muted-foreground truncate">
+                          <p className="text-xs md:text-sm text-muted-foreground truncate">
                             {conversation.lastMessage}
                           </p>
                           {conversation.unread > 0 && (
@@ -233,17 +220,17 @@ export const Messages = () => {
         {/* Chat Area */}
         <div className={cn(
           "flex-1 flex flex-col",
-          "lg:relative",
-          showConversationList ? "hidden lg:flex" : "flex"
+          "md:relative",
+          showConversationList ? "hidden md:flex" : "flex"
         )}>
           {/* Chat Header */}
-          <div className="border-b border-border p-3 lg:p-4">
+          <div className="border-b border-border p-3 md:p-4 bg-background">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="lg:hidden -ml-2"
+                  className="md:hidden -ml-2"
                   onClick={handleBackToConversations}
                 >
                   <ArrowLeft className="h-5 w-5" />
@@ -260,29 +247,29 @@ export const Messages = () => {
                   )}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-sm lg:text-base">{selectedConversation.name}</h3>
-                  <p className="text-xs lg:text-sm text-muted-foreground">
+                  <h3 className="font-semibold text-sm md:text-base">{selectedConversation.name}</h3>
+                  <p className="text-xs md:text-sm text-muted-foreground">
                     {selectedConversation.online ? "Online" : "Last seen recently"}
                   </p>
                 </div>
               </div>
               
               <div className="flex items-center space-x-1">
-                <Button variant="ghost" size="icon" className="h-8 w-8 lg:h-10 lg:w-10">
-                  <Phone className="h-4 w-4 lg:h-5 lg:w-5" />
+                <Button variant="ghost" size="icon" className="h-8 w-8 md:h-10 md:w-10">
+                  <Phone className="h-4 w-4 md:h-5 md:w-5" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 lg:h-10 lg:w-10">
-                  <Video className="h-4 w-4 lg:h-5 lg:w-5" />
+                <Button variant="ghost" size="icon" className="h-8 w-8 md:h-10 md:w-10">
+                  <Video className="h-4 w-4 md:h-5 md:w-5" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 lg:h-10 lg:w-10">
-                  <MoreVertical className="h-4 w-4 lg:h-5 lg:w-5" />
+                <Button variant="ghost" size="icon" className="h-8 w-8 md:h-10 md:w-10">
+                  <MoreVertical className="h-4 w-4 md:h-5 md:w-5" />
                 </Button>
               </div>
             </div>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-3 lg:p-4 space-y-3 lg:space-y-4">
+          <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4 bg-muted/20">
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -293,13 +280,13 @@ export const Messages = () => {
               >
                 <div
                   className={cn(
-                    "max-w-[85%] lg:max-w-[70%] p-3 rounded-lg",
+                    "max-w-[85%] md:max-w-[70%] p-3 rounded-lg",
                     message.isOwnMessage
                       ? "bg-primary text-primary-foreground"
-                      : "bg-muted"
+                      : "bg-background shadow-sm border"
                   )}
                 >
-                  <p className="text-sm lg:text-base leading-relaxed">{message.content}</p>
+                  <p className="text-sm md:text-base leading-relaxed">{message.content}</p>
                   <p className={cn(
                     "text-xs mt-1",
                     message.isOwnMessage ? "text-primary-foreground/80" : "text-muted-foreground"
@@ -312,28 +299,28 @@ export const Messages = () => {
           </div>
 
           {/* Message Input */}
-          <div className="border-t border-border p-3 lg:p-4">
+          <div className="border-t border-border p-3 md:p-4 bg-background">
             <div className="flex space-x-2">
               <Input
                 placeholder="Type a message..."
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="flex-1 text-sm lg:text-base"
+                className="flex-1 text-sm md:text-base"
               />
               <Button 
                 onClick={handleSendMessage}
                 disabled={!newMessage.trim()}
                 size="icon"
-                className="h-10 w-10 lg:h-auto lg:w-auto lg:px-4"
+                className="h-10 w-10 md:h-auto md:w-auto md:px-4 shrink-0"
               >
                 <Send className="h-4 w-4" />
-                <span className="hidden lg:inline ml-2">Send</span>
+                <span className="hidden md:inline ml-2">Send</span>
               </Button>
             </div>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };

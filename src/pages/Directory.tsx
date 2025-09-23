@@ -65,30 +65,44 @@ export const Directory = () => {
     location: "",
   });
 
-  const filteredAlumni = useMemo(() => {
-    return alumniData.filter((person) => {
-      const matchesSearch =
-        person.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        person.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        person.occupation.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        person.college.toLowerCase().includes(searchQuery.toLowerCase());
+const filteredAlumni = useMemo(() => {
+  return alumniData.filter((person) => {
+    const matchesSearch =
+      person.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      person.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      person.occupation.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      person.college.toLowerCase().includes(searchQuery.toLowerCase());
 
-      const matchesYear =
-        filters.graduationYear === "all" ||
-        !filters.graduationYear ||
-        person.graduationYear === filters.graduationYear;
-      const matchesbranch =
-        filters.branch === "all" ||
-        !filters.branch ||
-        person.branch === filters.branch;
-      const matchesLocation =
-        filters.location === "all" ||
-        !filters.location ||
-        person.location === filters.location;
+    // Fix graduation year comparison by converting both to strings
+    const matchesYear =
+      filters.graduationYear === "all" ||
+      !filters.graduationYear ||
+      String(person.graduationYear) === String(filters.graduationYear);
+      
+    const matchesbranch =
+      filters.branch === "all" ||
+      !filters.branch ||
+      person.branch === filters.branch;
+      
+    const matchesLocation =
+      filters.location === "all" ||
+      !filters.location ||
+      person.location === filters.location;
 
-      return matchesSearch && matchesYear && matchesbranch && matchesLocation;
-    });
-  }, [alumniData, searchQuery, filters]);
+    return matchesSearch && matchesYear && matchesbranch && matchesLocation;
+  });
+}, [alumniData, searchQuery, filters]);
+
+// Also, make sure your graduationYears array matches your data format:
+const graduationYears = useMemo(() => {
+  // Get unique graduation years from actual data
+  const years = Array.from(new Set(
+    alumniData.map(person => String(person.graduationYear))
+  )).sort((a, b) => parseInt(b) - parseInt(a)); // Sort in descending order
+  
+  return years;
+}, [alumniData]);
+
 
   const handleConnect = (personId: number) => {
     setAlumniData((prev) =>
