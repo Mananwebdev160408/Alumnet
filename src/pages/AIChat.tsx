@@ -1,12 +1,10 @@
-import { useState,useEffect,useRef } from "react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Bot, Send, User, Sparkles, Zap, MessageCircle } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { IndustrialButton } from "@/components/IndustrialButton";
+import { GlassCard } from "@/components/GlassCard";
+import { StatusBadge } from "@/components/StatusBadge";
+import { Bot, Send, User, Sparkles, Zap, Cpu, Activity, Terminal, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import ModelClient from "@azure-rest/ai-inference";
-import { AzureKeyCredential } from "@azure/core-auth";
-import {api} from "../../axios.js"
+
 interface Message {
   id: string;
   content: string;
@@ -18,74 +16,67 @@ export const AIChat = () => {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  
- const handleSendMessage = async () => {
-  if (!message.trim()) return;
+  const handleSendMessage = async () => {
+    if (!message.trim()) return;
 
-  // Add user message to conversation first
-  const userMessage: Message = {
-    id: Date.now().toString() + "-user",
-    content: message.trim(),
-    sender: "user",
-    timestamp: new Date(),
-  };
+    const userMessage: Message = {
+      id: Date.now().toString() + "-user",
+      content: message.trim(),
+      sender: "user",
+      timestamp: new Date(),
+    };
 
-  setMessages((prev) => [...prev, userMessage]);
-  const currentMessage = message.trim();
-  setMessage(""); // Clear input
-  setIsLoading(true);
+    setMessages((prev) => [...prev, userMessage]);
+    const currentMessage = message.trim();
+    setMessage(""); 
+    setIsLoading(true);
 
-  try {
-    // Send request to backend
-    const axiosres = await api.post("/users/aichat", { message: currentMessage });
-    
-    if (!axiosres.data.success) {
-      console.error("Error from AI service:", axiosres.data.message);
-      // Add error message to chat
+    try {
+      const functionUrl = import.meta.env.VITE_AICHAT_FUNCTION_URL;
+      
+      if (!functionUrl) {
+        throw new Error("CORE_AUTH_FAILURE: Missing API endpoint");
+      }
+
+      const res = await fetch(functionUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: currentMessage })
+      });
+      
+      const data = await res.json();
+      
+      if (!data.success) {
+        throw new Error(data.message || "UNIDENTIFIED_CORE_ERROR");
+      }
+
+      const aiResponseContent = data.message || "NO_RELAY_RECEIVED";
+      const messageContent = typeof aiResponseContent === 'string' ? aiResponseContent : JSON.stringify(aiResponseContent);
+      
+      const aiMessage: Message = {
+        id: Date.now().toString() + "-ai",
+        content: messageContent,
+        sender: "ai",
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, aiMessage]);
+      
+    } catch (error: any) {
+      console.error("AI_CORE_LINK_ERROR:", error);
       const errorMessage: Message = {
         id: Date.now().toString() + "-ai-error",
-        content: "Sorry, I encountered an error. Please try again.",
+        content: `CRITICAL_SYS_ERR: ${error.message}. TRANSMISSION_ABORTED.`,
         sender: "ai",
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);
-      return;
+    } finally {
+      setIsLoading(false);
     }
-
-    // Extract AI response - now it's directly in data property
-    const aiResponseContent = axiosres.data.message || "No response received";
-    
-    // Ensure it's a string
-    const messageContent = typeof aiResponseContent === 'string' ? 
-      aiResponseContent : 
-      JSON.stringify(aiResponseContent);
-    
-    const aiMessage: Message = {
-      id: Date.now().toString() + "-ai",
-      content: messageContent,
-      sender: "ai",
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, aiMessage]);
-    
-  } catch (error) {
-    console.error("Error communicating with AI service:", error);
-    
-    // Add error message to chat
-    const errorMessage: Message = {
-      id: Date.now().toString() + "-ai-error",
-      content: "Sorry, I encountered an error while processing your request. Please try again.",
-      sender: "ai",
-      timestamp: new Date(),
-    };
-    setMessages((prev) => [...prev, errorMessage]);
-  } finally {
-    setIsLoading(false);
-  }
-};
-const messagesEndRef = useRef<HTMLDivElement>(null);
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -103,119 +94,148 @@ const messagesEndRef = useRef<HTMLDivElement>(null);
   };
 
   return (
-    <div className="max-w-4xl mx-auto h-[calc(100vh-8rem)] flex flex-col">
-      <div className="text-center mb-6">
-        <h1 className="text-3xl font-bold mb-2">AI Assistant</h1>
-        <p className="text-muted-foreground">
-          Chat with AI - appears conversational but each message is processed
-          independently
-        </p>
+    <div className="p-4 lg:p-10 mt-16 max-w-[1200px] mx-auto h-[calc(100vh-10rem)] flex flex-col gap-6">
+      {/* Header HUD */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-foreground/10 pb-8">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <Cpu className="size-4 text-safety-orange" />
+            <p className="text-[10px] font-mono uppercase tracking-[0.4em] text-muted-foreground">Neural Core // Interface_V2</p>
+          </div>
+          <h1 className="text-4xl font-display font-black tracking-tighter uppercase leading-none">
+            AI_Assistant
+          </h1>
+        </div>
+        <div className="flex items-center gap-6">
+           <div className="text-right hidden sm:block">
+              <p className="text-[9px] font-mono text-muted-foreground uppercase">Neural Load</p>
+              <p className="text-sm font-display font-bold">12.5 GFlops</p>
+           </div>
+           <StatusBadge status={isLoading ? "offline" : "online"} text={isLoading ? "CORE_PROCESSING" : "READY"} />
+        </div>
       </div>
 
-      {/* Chat Messages */}
-      <Card className="flex-1 flex flex-col">
-        <CardHeader className="pb-3">
-          <div className="flex items-center space-x-2">
-            <Bot className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-semibold">Conversation</h2>
-          </div>
-        </CardHeader>
-        <CardContent className="flex-1 flex flex-col">
-          {/* Messages Container */}
-          <div className="flex-1 overflow-y-auto space-y-4 mb-4 min-h-[400px]">
-            {messages.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-center text-muted-foreground">
-                <div>
-                  <Bot className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p>Start a conversation with the AI assistant</p>
-                </div>
-              </div>
-            ) : (
-              messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={cn(
-                    "flex gap-3",
-                    msg.sender === "user" ? "justify-end" : "justify-start"
-                  )}
-                >
-                  {msg.sender === "ai" && (
-                    <div className="flex-shrink-0">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Bot className="h-4 w-4 text-primary" />
-                      </div>
-                    </div>
-                  )}
-                  <div
-                    className={cn(
-                      "max-w-[70%] rounded-lg px-4 py-2",
-                      msg.sender === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted"
-                    )}
-                  >
-                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                  </div>
-                  {msg.sender === "user" && (
-                    <div className="flex-shrink-0">
-                      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                        <User className="h-4 w-4 text-primary-foreground" />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))
-            )}
-            {isLoading && (
-              <div className="flex gap-3 justify-start">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Bot className="h-4 w-4 text-primary" />
-                  </div>
-                </div>
-                <div className="bg-muted rounded-lg px-4 py-2">
-                  <div className="flex items-center space-x-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                    <span className="text-sm text-muted-foreground">
-                      AI is thinking...
+      {/* Main Terminal */}
+      <GlassCard className="flex-1 flex flex-col border-foreground/5 relative overflow-hidden">
+        {/* Terminal Header */}
+        <div className="px-6 py-3 border-b border-foreground/5 bg-foreground/[0.02] flex items-center justify-between">
+           <div className="flex items-center gap-3">
+              <Terminal className="size-3 text-muted-foreground" />
+              <span className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">COMMS_TERMINAL_SESSION_0x1A4</span>
+           </div>
+           <div className="flex gap-1.5">
+              <div className="size-1.5 bg-foreground/20" />
+              <div className="size-1.5 bg-foreground/20" />
+              <div className="size-1.5 bg-safety-orange" />
+           </div>
+        </div>
+
+        {/* Messages Feed */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-8 terminal-scrollbar custom-scanlines">
+           {messages.length === 0 ? (
+             <div className="h-full flex flex-col items-center justify-center opacity-30 gap-4">
+                <Bot className="size-12" />
+                <p className="text-[10px] font-mono uppercase tracking-[0.5em]">Awaiting User Input Protocol...</p>
+             </div>
+           ) : (
+             messages.map((msg) => (
+               <div
+                 key={msg.id}
+                 className={cn(
+                   "flex flex-col gap-2 max-w-[85%] animate-in fade-in slide-in-from-bottom-2",
+                   msg.sender === "user" ? "ml-auto items-end" : "items-start"
+                 )}
+               >
+                 <div className="flex items-center gap-2 mb-1 px-1">
+                    <span className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
+                       {msg.sender === "user" ? "USER_ID" : "AI_CORE"} // {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
-                  </div>
+                 </div>
+                 
+                 <div className={cn(
+                   "p-4 border font-mono text-xs uppercase tracking-tighter leading-relaxed",
+                   msg.sender === "user" 
+                    ? "bg-safety-orange text-black border-safety-orange" 
+                    : "bg-foreground/5 text-foreground border-foreground/10 industrial-border shadow-[4px_4px_0px_rgba(255,114,33,0.1)]"
+                 )}>
+                    {msg.content}
+                 </div>
+               </div>
+             ))
+           )}
+           {isLoading && (
+             <div className="flex flex-col gap-2 items-start max-w-[85%] animate-pulse">
+                <span className="text-[9px] font-mono uppercase tracking-widest text-safety-orange px-1">AI_CORE // PROCESSING...</span>
+                <div className="p-4 bg-foreground/5 border border-foreground/10 text-foreground industrial-border size-full flex items-center gap-3">
+                   <div className="size-1 bg-safety-orange animate-bounce" />
+                   <div className="size-1 bg-safety-orange animate-bounce delay-75" />
+                   <div className="size-1 bg-safety-orange animate-bounce delay-150" />
+                   <span className="text-[9px] font-mono uppercase text-muted-foreground ml-2">Analyzing transmission packets...</span>
                 </div>
+             </div>
+           )}
+           <div ref={messagesEndRef} />
+        </div>
+
+        {/* Terminal Footer / Input */}
+        <div className="p-4 border-t border-foreground/5 bg-foreground/[0.02]">
+           <div className="flex gap-4">
+              <div className="flex-1 relative">
+                 <textarea
+                    placeholder="ENTER_COMMAND_OR_QUERY_"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    className="w-full h-16 bg-black/50 border border-foreground/10 p-4 font-mono text-xs uppercase tracking-tighter focus:outline-none focus:border-safety-orange resize-none"
+                 />
+                 <div className="absolute top-0 right-0 p-2 opacity-10 pointer-events-none">
+                    <Sparkles className="size-4" />
+                 </div>
               </div>
-            )}
-          </div>
+              <IndustrialButton 
+                onClick={handleSendMessage}
+                disabled={!message.trim() || isLoading}
+                variant="safety"
+                className="h-16 px-10 group"
+              >
+                <div className="flex flex-col items-center gap-1">
+                   <Send className="size-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                   <span className="text-[8px] font-mono">TRANSMIT</span>
+                </div>
+              </IndustrialButton>
+           </div>
+           
+           <div className="mt-3 flex items-center justify-between">
+              <div className="flex gap-4 items-center">
+                 <div className="flex items-center gap-2">
+                    <div className="size-1.5 rounded-full bg-safety-orange animate-pulse" />
+                    <span className="text-[8px] font-mono text-muted-foreground">LINK_ACTIVE</span>
+                 </div>
+                 <div className="flex items-center gap-2">
+                    <Activity className="size-3 text-muted-foreground" />
+                    <span className="text-[8px] font-mono text-muted-foreground uppercase opacity-50">LATENCY: 42MS</span>
+                 </div>
+              </div>
+              <div className="flex items-center gap-1 opacity-20">
+                 <AlertCircle className="size-3" />
+                 <span className="text-[8px] font-mono uppercase">Stateless_Relay_Mode</span>
+              </div>
+           </div>
+        </div>
+      </GlassCard>
 
-          {/* Message Input */}
-          <div className="flex gap-2">
-            <Textarea
-              placeholder="Type your message here..."
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              className="flex-1 min-h-[80px] max-h-[120px] resize-none"
-            />
-            <Button
-              onClick={handleSendMessage}
-              disabled={!message.trim() || isLoading}
-              size="lg"
-              className="self-end"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="mt-4 bg-muted/30">
-        <CardContent className="pt-4">
-          <div className="text-center text-sm text-muted-foreground">
-            <p>
-              <strong>Note:</strong> This AI doesn't actually remember previous
-              messages - each response is generated independently.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Footer System Status */}
+      <div className="flex flex-wrap justify-between items-center gap-4 text-muted-foreground">
+         <div className="flex items-center gap-4 text-[9px] font-mono uppercase">
+            <span>Core: GPT-4o-Mini</span>
+            <span>Ref: ALM_HUB_01</span>
+            <span>Proto: ALM_S_42</span>
+         </div>
+         <p className="text-[9px] font-mono uppercase tracking-widest text-center md:text-right max-w-lg">
+            WARNING: Neural core operates in transient mode. History persistence not active for this session.
+         </p>
+      </div>
     </div>
   );
 };
+

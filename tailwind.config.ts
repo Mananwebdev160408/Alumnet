@@ -58,6 +58,14 @@ export default {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",
         },
+        "safety-orange": {
+          DEFAULT: "hsl(var(--safety-orange))",
+          foreground: "hsl(var(--safety-orange-foreground))",
+        },
+        "electric-blue": {
+          DEFAULT: "hsl(var(--electric-blue))",
+          foreground: "hsl(var(--electric-blue-foreground))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -70,9 +78,9 @@ export default {
         },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        lg: "0px",
+        md: "0px",
+        sm: "0px",
       },
       boxShadow: {
         soft: "var(--shadow-soft)",
@@ -81,6 +89,8 @@ export default {
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
+        mono: ["JetBrains Mono", "monospace"],
+        display: ["Space Grotesk", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {

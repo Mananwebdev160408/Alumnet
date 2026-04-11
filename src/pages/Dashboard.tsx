@@ -1,295 +1,198 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import {
-  Users,
-  MessageCircle,
-  UserCheck,
-  GraduationCap,
-  TrendingUp,
-  Calendar,
-  ArrowRight,
+import { IndustrialButton } from "@/components/IndustrialButton";
+import { GlassCard } from "@/components/GlassCard";
+import { StatusBadge } from "@/components/StatusBadge";
+import { 
+  Users, 
+  MessageCircle, 
+  GraduationCap, 
+  Zap, 
+  Bell, 
+  ChevronRight,
+  Search,
+  ArrowUpRight,
+  Globe,
+  Radio
 } from "lucide-react";
-
-const stats = [
-  {
-    label: "Total Connections",
-    value: "127",
-    icon: UserCheck,
-    color: "text-primary",
-  },
-  { label: "Alumni Network", value: "2.4k", icon: Users, color: "text-accent" },
-  {
-    label: "Messages",
-    value: "12",
-    icon: MessageCircle,
-    color: "text-success",
-  },
-  {
-    label: "Mentorship Requests",
-    value: "3",
-    icon: GraduationCap,
-    color: "text-warning",
-  },
-];
-
-const recentConnections = [
-  {
-    id: 1,
-    name: "Sarah Johnson",
-    role: "Software Engineer at Google",
-    year: "2019",
-    avatar: "SJ",
-  },
-  {
-    id: 2,
-    name: "Mike Chen",
-    role: "Product Manager at Meta",
-    year: "2018",
-    avatar: "MC",
-  },
-  {
-    id: 3,
-    name: "Emma Wilson",
-    role: "Data Scientist at Netflix",
-    year: "2020",
-    avatar: "EW",
-  },
-];
-
-const mentorshipRequests = [
-  {
-    id: 1,
-    title: "Help with Machine Learning Career Path",
-    author: "Alex Thompson",
-    year: "Current Student",
-    time: "2 hours ago",
-  },
-  {
-    id: 2,
-    title: "Startup Advice Needed",
-    author: "Jessica Lee",
-    year: "2023 Graduate",
-    time: "1 day ago",
-  },
-];
-
-const upcomingEvents = [
-  { id: 1, title: "Alumni Tech Talk", date: "Oct 25", time: "6:00 PM" },
-  { id: 2, title: "Career Fair 2024", date: "Nov 5", time: "10:00 AM" },
-];
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export const Dashboard = () => {
-  // Navigation handler for demo purposes
-  const handleNavigation = (path) => {
-    console.log(`Navigate to: ${path}`);
-    // In your actual app, replace this with: 
-    // <Link to="/connections"> or your router navigation
-  };
+  const broadcasts = [
+    { id: 1, title: "Career Fair: Tech Sector", loc: "Virtual Hub", time: "2h ago" },
+    { id: 2, title: "Alumni Meet: Bangalore", loc: "Sector 4", time: "5h ago" },
+  ];
+
+  const onlinePeers = [
+    { id: 'AG-72', name: "Alex Riv", role: "SDE @ Google", status: "online" as const },
+    { id: 'AG-44', name: "Mina Sun", role: "Founder @ Neo", status: "away" as const },
+    { id: 'AG-12', name: "Jordan K", role: "PhD @ Stanford", status: "online" as const },
+  ];
 
   return (
-    <>
-      {/* Coming Soon Overlay - Responsive */}
-      <div className="absolute inset-0 bg-background/60 lg:top-16 lg:left-64 lg:right-0 lg:bottom-0 backdrop-blur-md flex items-center justify-center z-50">
-        <div className="text-center space-y-2 px-4">
-          <h2 className="text-xl md:text-2xl font-bold">Coming Soon 🚀</h2>
-          <p className="text-sm md:text-base text-muted-foreground">
-            This feature will be available in a future update
+    <div className="p-4 lg:p-8 space-y-8 mt-16 max-w-[1600px] mx-auto">
+      {/* Header Area */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-foreground/10 pb-8">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="size-2 bg-safety-orange animate-pulse" />
+            <p className="text-[10px] font-mono uppercase tracking-[0.4em] text-muted-foreground">Authorized Connection Active</p>
+          </div>
+          <h1 className="text-4xl lg:text-6xl font-display font-black tracking-tighter uppercase leading-none">
+            Welcome, <span className="text-safety-orange">Agent #01</span>
+          </h1>
+          <p className="text-muted-foreground font-mono text-xs uppercase tracking-widest mt-4">
+            Unit: IIT Delhi Infrastructure // Node Access: Level 4
           </p>
+        </div>
+        <div className="flex gap-3">
+          <div className="text-right hidden md:block mr-4">
+            <p className="text-[10px] font-mono text-muted-foreground uppercase">Network Latency</p>
+            <p className="text-sm font-mono font-bold uppercase">12ms <span className="text-emerald-500">OPTIMAL</span></p>
+          </div>
+          <IndustrialButton variant="outline" size="icon" className="size-12">
+            <Bell className="size-5" />
+          </IndustrialButton>
+          <IndustrialButton variant="safety" size="lg" className="h-12 px-8">
+            New Broadcast
+          </IndustrialButton>
         </div>
       </div>
 
-      <div className="space-y-4 md:space-y-6 lg:space-y-8 max-h-screen lg:max-h-[88vh] overflow-y-auto px-4 md:px-6 lg:px-0 py-4 md:py-6 lg:py-0">
-        {/* Header */}
-        <div className="text-center md:text-left">
-          <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Welcome back, John!
-          </h1>
-          <p className="text-sm md:text-base text-muted-foreground mt-2">
-            Here's what's happening in your alumni network today.
-          </p>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Left Column: Broadcasts */}
+        <div className="lg:col-span-3 space-y-6">
+          <div className="flex items-center justify-between">
+            <h3 className="text-[11px] font-mono uppercase tracking-widest flex items-center gap-2">
+              <Radio className="size-3 text-safety-orange" />
+              Official Stream
+            </h3>
+            <span className="text-[9px] font-mono text-muted-foreground">LIVE_FEED</span>
+          </div>
+          
+          <div className="space-y-4">
+            {broadcasts.map((b) => (
+              <GlassCard key={b.id} className="p-3 border-foreground/5 hover:border-safety-orange/20 cursor-pointer group">
+                <p className="text-[9px] font-mono text-safety-orange uppercase mb-1">{b.time}</p>
+                <h4 className="text-xs font-display font-bold uppercase tracking-wider mb-2 group-hover:text-safety-orange transition-colors">
+                  {b.title}
+                </h4>
+                <div className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground italic">
+                  <span>@ {b.loc}</span>
+                </div>
+              </GlassCard>
+            ))}
+            <button className="w-full py-3 border border-dashed border-foreground/10 text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground hover:border-foreground/20 hover:text-foreground transition-all">
+              Load Archive Data
+            </button>
+          </div>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
-          {stats.map((stat, index) => (
-            <Card
-              key={index}
-              className="hover:shadow-lg transition-all duration-200 cursor-pointer"
-            >
-              <CardContent className="p-4 md:p-6">
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between space-y-2 md:space-y-0">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs md:text-sm font-medium text-muted-foreground">
-                      {stat.label}
-                    </p>
-                    <p className="text-xl md:text-2xl lg:text-3xl font-bold mt-1 md:mt-2">
-                      {stat.value}
-                    </p>
-                  </div>
-                  <div className={`p-2 md:p-3 rounded-lg bg-muted/50 ${stat.color} self-end md:self-auto`}>
-                    <stat.icon className="h-5 w-5 md:h-6 md:w-6" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
-          {/* Recent Connections */}
-          <Card className="xl:col-span-2">
-            <CardHeader className="pb-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0">
-                <div>
-                  <CardTitle className="text-lg md:text-xl">Recent Connections</CardTitle>
-                  <CardDescription className="text-sm">
-                    Alumni you've recently connected with
-                  </CardDescription>
-                </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="self-start sm:self-auto"
-                  onClick={() => handleNavigation('/connections')}
-                >
-                  <span className="hidden sm:inline">View all</span>
-                  <span className="sm:hidden">All</span>
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3 md:space-y-4">
-              {recentConnections.map((connection) => (
-                <div
-                  key={connection.id}
-                  className="flex items-center space-x-3 md:space-x-4 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-                  onClick={() => handleNavigation(`/profile/${connection.id}`)}
-                >
-                  <Avatar className="h-10 w-10 md:h-12 md:w-12">
-                    <AvatarImage src={`/placeholder-${connection.id}.jpg`} />
-                    <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-                      {connection.avatar}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate text-sm md:text-base">
-                      {connection.name}
-                    </p>
-                    <p className="text-xs md:text-sm text-muted-foreground truncate">
-                      {connection.role}
-                    </p>
-                  </div>
-                  <Badge variant="secondary" className="text-xs whitespace-nowrap">
-                    <span className="hidden sm:inline">Class of </span>
-                    {connection.year}
-                  </Badge>
-                </div>
+        {/* Center Column: Activity Stream */}
+        <div className="lg:col-span-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <h3 className="text-[11px] font-mono uppercase tracking-widest">Activity Node Stream</h3>
+            <div className="flex gap-4">
+              {['All', 'Mentorship', 'Units'].map(f => (
+                <button key={f} className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground hover:text-foreground">
+                  [{f}]
+                </button>
               ))}
-            </CardContent>
-          </Card>
-
-          {/* Upcoming Events */}
-          <Card>
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-lg md:text-xl">
-                <Calendar className="mr-2 h-4 w-4 md:h-5 md:w-5" />
-                Upcoming Events
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 md:space-y-4">
-              {upcomingEvents.map((event) => (
-                <div
-                  key={event.id}
-                  className="p-3 border border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
-                  onClick={() => handleNavigation(`/events/${event.id}`)}
-                >
-                  <h4 className="font-medium text-sm md:text-base">
-                    {event.title}
-                  </h4>
-                  <p className="text-xs md:text-sm text-muted-foreground mt-1">
-                    {event.date} at {event.time}
-                  </p>
-                </div>
-              ))}
-              <Button 
-                className="w-full" 
-                variant="outline" 
-                size="sm"
-                onClick={() => handleNavigation('/calendar')}
-              >
-                View Calendar
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Mentorship Requests */}
-        <Card>
-          <CardHeader className="pb-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0">
-              <div>
-                <CardTitle className="text-lg md:text-xl">Recent Mentorship Requests</CardTitle>
-                <CardDescription className="text-sm">
-                  Students seeking guidance from alumni
-                </CardDescription>
-              </div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="self-start sm:self-auto"
-                onClick={() => handleNavigation('/mentorship')}
-              >
-                <span className="hidden sm:inline">View all</span>
-                <span className="sm:hidden">All</span>
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
             </div>
-          </CardHeader>
-          <CardContent className="space-y-3 md:space-y-4">
-            {mentorshipRequests.map((request) => (
-              <div
-                key={request.id}
-                className="p-3 md:p-4 border border-border rounded-lg hover:border-primary/20 transition-colors cursor-pointer"
-                onClick={() => handleNavigation(`/mentorship/${request.id}`)}
-              >
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between space-y-3 sm:space-y-0 sm:space-x-4">
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-medium mb-2 text-sm md:text-base">
-                      {request.title}
-                    </h4>
-                    <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4 text-xs md:text-sm text-muted-foreground">
-                      <span>by {request.author}</span>
-                      <Badge variant="outline" className="text-xs self-start">
-                        {request.year}
-                      </Badge>
-                      <span className="text-xs">{request.time}</span>
+          </div>
+
+          <div className="space-y-4">
+            {/* Connection Request Card */}
+            <GlassCard className="p-6 border-electric-blue/20 bg-electric-blue/[0.02] relative overflow-hidden staggered-reveal">
+               <div className="absolute top-0 right-0 p-2 opacity-10">
+                 <Zap className="size-12 text-electric-blue" />
+               </div>
+               <div className="flex items-start gap-4">
+                  <Avatar className="size-12 rounded-none border border-electric-blue/30">
+                    <AvatarFallback className="bg-electric-blue text-black font-bold font-mono">SC</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="text-xs font-display font-bold uppercase tracking-wider">Sarah Chen</p>
+                      <StatusBadge status="verified" label="ALUMNI_18" />
+                    </div>
+                    <p className="text-[11px] text-muted-foreground font-mono leading-relaxed mb-4">
+                      Requested a mentorship session regarding: <span className="text-foreground">"Neural Architecture Design"</span>
+                    </p>
+                    <div className="flex gap-3">
+                      <IndustrialButton variant="electric" size="sm" className="h-8">Initialize link</IndustrialButton>
+                      <IndustrialButton variant="outline" size="sm" className="h-8">Details</IndustrialButton>
                     </div>
                   </div>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="self-start sm:self-auto"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleNavigation(`/mentorship/${request.id}/respond`);
-                    }}
-                  >
-                    Respond
-                  </Button>
+               </div>
+            </GlassCard>
+
+            {/* General Activity */}
+            {[1, 2].map(i => (
+              <GlassCard key={i} className="p-6 border-foreground/5 hover:border-foreground/10 staggered-reveal">
+                <div className="flex gap-4">
+                  <div className="size-10 industrial-border bg-foreground/5 flex items-center justify-center grayscale text-muted-foreground">
+                    <Globe className="size-4" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-2">
+                       <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Protocol_Update // Connection</p>
+                       <p className="text-[9px] font-mono text-muted-foreground uppercase">14m ago</p>
+                    </div>
+                    <p className="text-xs font-mono">
+                      User <span className="text-foreground font-bold">James Miller</span> synchronized with the <span className="text-safety-orange italic">SF Tech Sector</span> node.
+                    </p>
+                  </div>
                 </div>
+              </GlassCard>
+            ))}
+          </div>
+        </div>
+
+        {/* Right Column: Node Connectivity */}
+        <div className="lg:col-span-3 space-y-6">
+          <div className="flex items-center justify-between">
+            <h3 className="text-[11px] font-mono uppercase tracking-widest flex items-center gap-2">
+              <Users className="size-3 text-electric-blue" />
+              Active Nodes
+            </h3>
+            <span className="text-[9px] font-mono text-muted-foreground">PEER_TRACKING</span>
+          </div>
+
+          <GlassCard className="p-0 border-foreground/5 divide-y divide-foreground/5">
+            {onlinePeers.map((peer) => (
+              <div key={peer.id} className="p-4 flex items-center gap-4 hover:bg-foreground/[0.02] transition-colors group cursor-pointer">
+                <Avatar className="size-8 rounded-none border border-foreground/10 group-hover:border-foreground/30 transition-colors">
+                  <AvatarFallback className="text-[10px] font-mono uppercase">{peer.name.slice(0, 2)}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] font-display font-bold uppercase truncate tracking-wide">{peer.name}</p>
+                  <p className="text-[9px] font-mono text-muted-foreground uppercase truncate mt-0.5">{peer.role}</p>
+                </div>
+                <StatusBadge status={peer.status} label={peer.status} className="border-none bg-transparent p-0" />
               </div>
             ))}
-          </CardContent>
-        </Card>
+            <div className="p-4 bg-foreground/[0.02]">
+              <IndustrialButton variant="outline" className="w-full text-[10px] uppercase font-mono tracking-widest">
+                Search Subnet
+              </IndustrialButton>
+            </div>
+          </GlassCard>
+
+          {/* Quick Stats Pod */}
+          <div className="p-6 border border-foreground/5 bg-foreground/[0.01] space-y-4">
+             <div className="flex justify-between items-center text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+               <span>Subnet Load</span>
+               <span>72%</span>
+             </div>
+             <div className="h-1 w-full bg-foreground/5 overflow-hidden">
+                <div className="h-full bg-safety-orange w-[72%]" />
+             </div>
+             <div className="flex justify-between items-center text-[9px] font-mono text-muted-foreground uppercase">
+                <span>Active Relays</span>
+                <span>12 Active</span>
+             </div>
+          </div>
+        </div>
       </div>
-    </>
+    </div>
   );
-};
+};

@@ -1,64 +1,66 @@
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { IndustrialButton } from "@/components/IndustrialButton";
+import { GlassCard } from "@/components/GlassCard";
+import { StatusBadge } from "@/components/StatusBadge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { FormInput } from "@/components/ui/form-input";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Plus, 
   MessageCircle, 
   Clock, 
-  GraduationCap, 
   BookOpen,
   Heart,
-  Users,
-  Filter
+  Filter,
+  Zap,
+  Activity,
+  Cpu,
+  Share2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
-// Mock data
+// Mock data updated for Neo-Industrial theme
 const mockRequests = [
   {
     id: 1,
-    title: "Need Guidance on Machine Learning Career Path",
-    description: "I'm a final-year CS student passionate about ML/AI. Looking for advice on career opportunities, skill development, and industry insights. Would love to connect with someone who has experience in this field.",
-    author: "Alex Thompson",
+    title: "PROTOCOL_QUERY: MACHINE_LEARNING_CAREER_PATH",
+    description: "Seeking expert-level guidance on ML deployment protocols and career architectural shifts. Priority: High-load production insights.",
+    author: "ALEX_THOMPSON",
     authorAvatar: "AT",
     graduationYear: "2025",
-    category: "Career Guidance",
-    tags: ["Machine Learning", "AI", "Career"],
-    timePosted: "2 hours ago",
+    category: "Technical Skills",
+    tags: ["ML", "AI", "INFRASTRUCTURE"],
+    timePosted: "2H_AGO",
     replies: 3,
     helpful: 5,
     status: "open"
   },
   {
     id: 2,
-    title: "Startup Advice - From Idea to Launch",
-    description: "I have a SaaS idea and I'm looking for mentorship on the business side. Need guidance on market validation, finding co-founders, and fundraising strategies.",
-    author: "Jessica Lee",
+    title: "VENTURE_INIT: SAAS_ARCH_VALIDATION",
+    description: "Requesting node relay for SaaS business architecture. Focusing on market validation and seed-round protocols.",
+    author: "JESSICA_LEE",
     authorAvatar: "JL",
     graduationYear: "2023",
     category: "Entrepreneurship",
-    tags: ["Startup", "Business", "SaaS"],
-    timePosted: "1 day ago",
+    tags: ["SAAS", "VENTURE", "CAPITAL"],
+    timePosted: "24H_AGO",
     replies: 7,
     helpful: 12,
     status: "open"
   },
   {
     id: 3,
-    title: "Transitioning from Academia to Industry",
-    description: "After completing my PhD in Computer Science, I'm looking to transition to industry. Would appreciate advice on how to present academic experience to potential employers.",
-    author: "Dr. Michael Zhang",
+    title: "RELAY_SHIFT: ACADEMIA_TO_INDUSTRY_OPS",
+    description: "Post-PhD transition protocol. Optimizing academic research nodes for industry engineering standards.",
+    author: "DR_MICHAEL_ZHANG",
     authorAvatar: "MZ",
     graduationYear: "2019",
     category: "Career Transition",
-    tags: ["PhD", "Industry", "Career Change"],
-    timePosted: "3 days ago",
+    tags: ["PHD", "R&D", "INDUSTRY"],
+    timePosted: "3D_AGO",
     replies: 5,
     helpful: 8,
     status: "answered"
@@ -87,14 +89,14 @@ export const Mentorship = () => {
     if (newRequest.title && newRequest.description && newRequest.category) {
       const request = {
         id: requests.length + 1,
-        title: newRequest.title,
+        title: newRequest.title.toUpperCase(),
         description: newRequest.description,
-        author: "You",
-        authorAvatar: "YO",
+        author: "USER_ADMIN",
+        authorAvatar: "UA",
         graduationYear: "2020",
         category: newRequest.category,
-        tags: newRequest.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
-        timePosted: "Just now",
+        tags: newRequest.tags.split(',').map(tag => tag.trim().toUpperCase()).filter(tag => tag),
+        timePosted: "SYNC_NOW",
         replies: 0,
         helpful: 0,
         status: "open" as const
@@ -104,63 +106,56 @@ export const Mentorship = () => {
       setNewRequest({ title: "", description: "", category: "", tags: "" });
       setIsNewRequestOpen(false);
       
-      toast({
-        title: "Request posted!",
-        description: "Your mentorship request has been posted successfully.",
-      });
+      toast({ title: "TRANSMISSION_COMPLETE", description: "Knowledge relay request broadcasted." });
     }
   };
 
   const handleReply = (requestId: number) => {
-    toast({
-      title: "Reply sent!",
-      description: "Your reply has been sent to the mentorship request.",
-    });
+    toast({ title: "RELAY_ACKNOWLEDGED", description: "Transmission bridge established." });
   };
 
   return (
-    <div className="space-y-6">
+    <div className="p-4 lg:p-10 space-y-10 mt-16 max-w-[1400px] mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-foreground/10 pb-10">
         <div>
-          <h1 className="text-3xl font-bold text-gradient">Mentorship Board</h1>
-          <p className="text-muted-foreground mt-2">
-            Connect students with alumni for guidance and career advice
-          </p>
+          <div className="flex items-center gap-3 mb-2">
+            <Cpu className="size-4 text-safety-orange" />
+            <p className="text-[10px] font-mono uppercase tracking-[0.4em] text-muted-foreground">Relay Board // AlumNet_OS</p>
+          </div>
+          <h1 className="text-4xl md:text-6xl font-display font-black tracking-tighter uppercase leading-none">
+            Knowledge_Relays
+          </h1>
         </div>
         
         <Dialog open={isNewRequestOpen} onOpenChange={setIsNewRequestOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-accent hover:bg-accent-light">
-              <Plus className="mr-2 h-4 w-4" />
-              Post Request
-            </Button>
+            <IndustrialButton variant="safety" className="h-12 px-8">
+              <Plus className="mr-2 size-4" /> BROADCAST_REQUEST
+            </IndustrialButton>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Create Mentorship Request</DialogTitle>
-              <DialogDescription>
-                Ask for guidance from experienced alumni in your field
-              </DialogDescription>
+          <DialogContent className="max-w-2xl bg-black border-foreground/20 rounded-none industrial-overlay">
+            <DialogHeader className="border-b border-foreground/10 pb-6">
+              <DialogTitle className="text-2xl font-display font-black uppercase tracking-tight">TRANSMISSION_PARAMETER_INIT</DialogTitle>
+              <DialogDescription className="text-xs font-mono uppercase tracking-widest text-muted-foreground">Configure knowledge relay parameters</DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
-              <FormInput
-                label="Title"
-                value={newRequest.title}
-                onChange={(e) => setNewRequest(prev => ({ ...prev, title: e.target.value }))}
-                placeholder="Brief, descriptive title for your request"
-              />
+            <div className="space-y-6 pt-6">
+              <div className="space-y-2">
+                 <label className="text-[10px] font-mono uppercase text-muted-foreground">TRANSMISSION_TITLE</label>
+                 <Input 
+                   value={newRequest.title}
+                   onChange={(e) => setNewRequest(prev => ({ ...prev, title: e.target.value }))}
+                   className="h-12 rounded-none bg-foreground/[0.02] border-foreground/10 font-mono text-xs uppercase"
+                 />
+              </div>
               
               <div className="space-y-2">
-                <label className="text-sm font-medium">Category</label>
-                <Select 
-                  value={newRequest.category} 
-                  onValueChange={(value) => setNewRequest(prev => ({ ...prev, category: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a category" />
+                <label className="text-[10px] font-mono uppercase text-muted-foreground">KNOWLEDGE_SECTOR</label>
+                <Select onValueChange={(value) => setNewRequest(prev => ({ ...prev, category: value }))}>
+                  <SelectTrigger className="h-12 rounded-none bg-foreground/[0.02] border-foreground/10 font-mono text-xs uppercase">
+                    <SelectValue placeholder="SELECT_SECTOR..." />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-black border-foreground/10 text-xs font-mono uppercase">
                     {categories.slice(1).map(category => (
                       <SelectItem key={category} value={category}>{category}</SelectItem>
                     ))}
@@ -168,183 +163,148 @@ export const Mentorship = () => {
                 </Select>
               </div>
 
-              <FormInput
-                label="Description"
-                multiline
-                rows={4}
-                value={newRequest.description}
-                onChange={(e) => setNewRequest(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Provide details about what kind of guidance you're seeking..."
-              />
+              <div className="space-y-2">
+                 <label className="text-[10px] font-mono uppercase text-muted-foreground">CORE_INTENT (DESCRIPTION)</label>
+                 <textarea 
+                   rows={4}
+                   value={newRequest.description}
+                   onChange={(e) => setNewRequest(prev => ({ ...prev, description: e.target.value }))}
+                   className="w-full p-4 rounded-none bg-foreground/[0.02] border border-foreground/10 font-mono text-xs uppercase focus:outline-none focus:ring-1 focus:ring-safety-orange"
+                 />
+              </div>
 
-              <FormInput
-                label="Tags (comma-separated)"
-                value={newRequest.tags}
-                onChange={(e) => setNewRequest(prev => ({ ...prev, tags: e.target.value }))}
-                placeholder="e.g., Machine Learning, Career, Startup"
-              />
-
-              <div className="flex space-x-2 pt-4">
-                <Button onClick={handleCreateRequest} className="flex-1">
-                  Post Request
-                </Button>
-                <Button variant="outline" onClick={() => setIsNewRequestOpen(false)}>
-                  Cancel
-                </Button>
+              <div className="flex gap-4 pt-4">
+                <IndustrialButton variant="safety" onClick={handleCreateRequest} className="flex-1 h-12">
+                  INITIALIZE_BROADCAST
+                </IndustrialButton>
+                <IndustrialButton variant="outline" onClick={() => setIsNewRequestOpen(false)} className="h-12 px-8">
+                  ABORT
+                </IndustrialButton>
               </div>
             </div>
           </DialogContent>
         </Dialog>
       </div>
 
-      {/* Stats Cards */}
+      {/* Grid: Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
-          <CardContent className="p-6 text-center">
-            <BookOpen className="h-8 w-8 text-primary mx-auto mb-2" />
-            <p className="text-2xl font-bold">{requests.length}</p>
-            <p className="text-muted-foreground">Total Requests</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6 text-center">
-            <Clock className="h-8 w-8 text-warning mx-auto mb-2" />
-            <p className="text-2xl font-bold">{requests.filter(r => r.status === "open").length}</p>
-            <p className="text-muted-foreground">Open Requests</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6 text-center">
-            <MessageCircle className="h-8 w-8 text-success mx-auto mb-2" />
-            <p className="text-2xl font-bold">{requests.reduce((sum, r) => sum + r.replies, 0)}</p>
-            <p className="text-muted-foreground">Total Replies</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6 text-center">
-            <Heart className="h-8 w-8 text-accent mx-auto mb-2" />
-            <p className="text-2xl font-bold">{requests.reduce((sum, r) => sum + r.helpful, 0)}</p>
-            <p className="text-muted-foreground">Helpful Votes</p>
-          </CardContent>
-        </Card>
+        {[
+          { label: "Active_Relays", val: requests.length, icon: BookOpen, color: "text-safety-orange" },
+          { label: "Pending_Sync", val: requests.filter(r => r.status === "open").length, icon: Clock, color: "text-electric-blue" },
+          { label: "Total_Transmissions", val: requests.reduce((sum, r) => sum + r.replies, 0), icon: Activity, color: "text-foreground" },
+          { label: "Node_Helpfulness", val: requests.reduce((sum, r) => sum + r.helpful, 0), icon: Heart, color: "text-muted-foreground" }
+        ].map((stat, i) => (
+          <GlassCard key={i} className="p-6 border-foreground/5 relative overflow-hidden group">
+             <div className="absolute top-0 right-0 size-1 bg-foreground/10" />
+             <div className="flex items-center gap-4 mb-4">
+                <div className="size-8 industrial-border flex items-center justify-center bg-foreground/5">
+                   <stat.icon className={cn("size-4", stat.color)} />
+                </div>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">{stat.label}</span>
+             </div>
+             <p className="text-3xl font-display font-black tracking-tighter">{stat.val}</p>
+          </GlassCard>
+        ))}
       </div>
 
-      {/* Category Filter */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center space-x-4">
-            <Filter className="h-5 w-5 text-muted-foreground" />
+      {/* Filter System */}
+      <GlassCard className="p-2 border-foreground/5 bg-foreground/[0.01]">
+         <div className="flex flex-wrap items-center gap-2 p-2">
+            <Filter className="size-3 text-muted-foreground ml-2" />
             <div className="flex flex-wrap gap-2">
-              {categories.map((category) => (
-                <Button
-                  key={category}
-                  variant={selectedCategory === category ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedCategory(category)}
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={cn(
+                    "px-4 h-8 text-[9px] font-mono tracking-widest uppercase transition-all flex items-center gap-2",
+                    selectedCategory === cat 
+                      ? "bg-safety-orange text-black border border-safety-orange" 
+                      : "bg-transparent border border-foreground/10 text-muted-foreground hover:border-foreground/30"
+                  )}
                 >
-                  {category}
-                </Button>
+                  {cat === "All" ? <Zap className="size-3" /> : null}
+                  {cat}
+                </button>
               ))}
             </div>
-          </div>
-        </CardContent>
-      </Card>
+         </div>
+      </GlassCard>
 
-      {/* Mentorship Requests */}
-      <div className="space-y-4">
-        {filteredRequests.map((request) => (
-          <Card key={request.id} className="hover-lift transition-all duration-200">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={`/placeholder-${request.id}.jpg`} />
-                      <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                        {request.authorAvatar}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-sm font-medium">{request.author}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {request.graduationYear === "2025" ? "Current Student" : `Class of ${request.graduationYear}`} • {request.timePosted}
-                      </p>
+      {/* Knowledge Requests */}
+      <div className="grid gap-6">
+        {filteredRequests.map((req) => (
+          <GlassCard key={req.id} className="p-8 border-foreground/5 group hover:bg-foreground/[0.01] transition-colors relative">
+            <div className="flex flex-col md:flex-row gap-8">
+              <div className="flex flex-col items-center gap-3">
+                 <Avatar className="size-16 rounded-none border border-foreground/10 grayscale group-hover:grayscale-0 transition-all">
+                    <AvatarFallback className="bg-foreground/5 font-display font-black">{req.authorAvatar}</AvatarFallback>
+                 </Avatar>
+                 <div className="text-center">
+                    <p className="text-[9px] font-mono font-bold">{req.author}</p>
+                    <p className="text-[8px] font-mono text-muted-foreground uppercase mt-1">CLASS_{req.graduationYear}</p>
+                 </div>
+              </div>
+              
+              <div className="flex-1">
+                 <div className="flex flex-wrap items-center gap-3 mb-4">
+                    <StatusBadge status={req.status === "open" ? "online" : "offline"} text={req.status === "open" ? "ACTIVE_RELAY" : "SESSION_CLOSED"} />
+                    <span className="text-[9px] font-mono text-muted-foreground tracking-widest uppercase">/ SECTOR: {req.category}</span>
+                    <div className="flex-1 h-px bg-foreground/5 md:block hidden" />
+                    <span className="text-[9px] font-mono text-muted-foreground uppercase">{req.timePosted}</span>
+                 </div>
+                 
+                 <h3 className="text-xl font-display font-black uppercase tracking-tight mb-4 group-hover:text-safety-orange transition-colors">{req.title}</h3>
+                 <p className="text-sm font-mono text-muted-foreground leading-relaxed uppercase tracking-tighter mb-6">
+                    {req.description}
+                 </p>
+                 
+                 <div className="flex flex-wrap gap-2 mb-8">
+                    {req.tags.map((tag, idx) => (
+                       <span key={idx} className="px-2 py-1 bg-foreground/5 border border-foreground/10 text-[8px] font-mono text-muted-foreground uppercase">{tag}</span>
+                    ))}
+                 </div>
+
+                 <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-6 border-t border-foreground/5">
+                    <div className="flex items-center gap-8">
+                       <div className="flex items-center gap-2">
+                          <MessageCircle className="size-3 text-muted-foreground" />
+                          <span className="text-[10px] font-mono text-muted-foreground font-bold">{req.replies} RESPONSES</span>
+                       </div>
+                       <div className="flex items-center gap-2">
+                          <Heart className="size-3 text-muted-foreground" />
+                          <span className="text-[10px] font-mono text-muted-foreground font-bold">{req.helpful} NODE_UPVOTES</span>
+                       </div>
                     </div>
-                  </div>
-                  
-                  <CardTitle className="text-lg mb-2">{request.title}</CardTitle>
-                  
-                  <div className="flex items-center space-x-4 mb-3">
-                    <Badge variant="secondary">{request.category}</Badge>
-                    <Badge 
-                      variant={request.status === "open" ? "default" : "outline"}
-                      className={request.status === "open" ? "bg-success text-success-foreground" : ""}
-                    >
-                      {request.status === "open" ? "Open" : "Answered"}
-                    </Badge>
-                  </div>
-                </div>
+                    
+                    <div className="flex gap-3 w-full md:w-auto">
+                       <IndustrialButton variant="outline" className="h-10 px-8 flex-1 md:flex-none uppercase text-[9px] font-mono tracking-widest">
+                          <Share2 className="mr-2 size-3" /> EXPORT
+                       </IndustrialButton>
+                       <IndustrialButton 
+                         variant={req.status === "open" ? "safety" : "outline"}
+                         onClick={() => handleReply(req.id)}
+                         className="h-10 px-10 flex-1 md:flex-none uppercase text-[9px] font-mono tracking-widest"
+                       >
+                         <Zap className="mr-2 size-3" /> ESTABLISH_BRIDGE
+                       </IndustrialButton>
+                    </div>
+                 </div>
               </div>
-            </CardHeader>
-            
-            <CardContent>
-              <p className="text-muted-foreground mb-4 leading-relaxed">
-                {request.description}
-              </p>
-              
-              {request.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {request.tags.map((tag, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                  <span className="flex items-center">
-                    <MessageCircle className="mr-1 h-4 w-4" />
-                    {request.replies} replies
-                  </span>
-                  <span className="flex items-center">
-                    <Heart className="mr-1 h-4 w-4" />
-                    {request.helpful} helpful
-                  </span>
-                </div>
-                
-                <Button 
-                  onClick={() => handleReply(request.id)}
-                  size="sm"
-                  variant={request.status === "open" ? "default" : "outline"}
-                >
-                  <MessageCircle className="mr-2 h-4 w-4" />
-                  Reply
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+          </GlassCard>
         ))}
       </div>
 
       {filteredRequests.length === 0 && (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <GraduationCap className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">No requests found</h3>
-            <p className="text-muted-foreground mb-4">
-              No mentorship requests match your current filter
-            </p>
-            <Button onClick={() => setSelectedCategory("All")}>
-              Show all requests
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="h-96 border border-dashed border-foreground/10 flex flex-col items-center justify-center gap-6">
+           <Zap className="size-12 text-muted-foreground/10" />
+           <p className="text-[11px] font-mono text-muted-foreground uppercase tracking-[0.4em]">Zero Knowledge Nodes Detected In Filter</p>
+           <IndustrialButton variant="outline" onClick={() => setSelectedCategory("All")} className="px-12 h-12">
+              RESET_FILTER_PROTOCOL
+           </IndustrialButton>
+        </div>
       )}
     </div>
   );
-};
+};

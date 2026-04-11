@@ -1,49 +1,59 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { IndustrialButton } from "@/components/IndustrialButton";
+import { GlassCard } from "@/components/GlassCard";
+import { StatusBadge } from "@/components/StatusBadge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Search, Send, Phone, Video, MoreVertical, ArrowLeft, Menu } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { 
+  Search, 
+  Send, 
+  MoreVertical, 
+  ArrowLeft, 
+  Zap, 
+  Radio, 
+  Activity, 
+  Shield, 
+  Cpu, 
+  Terminal,
+  Paperclip,
+  Share2
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Mock data
+// Mock data updated for Neo-Industrial theme
 const mockConversations = [
   {
     id: 1,
-    name: "Sarah Johnson",
+    name: "SARAH_JOHNSON",
+    nodeId: "NODE_S102",
     avatar: "SJ",
-    lastMessage: "Thanks for the advice about the interview process!",
-    timestamp: "2 min ago",
+    lastMessage: "SYNC: Advice on technical protocol received.",
+    timestamp: "14:02",
     unread: 2,
-    online: true
+    online: true,
+    sector: "Cloud Architecture"
   },
   {
     id: 2,
-    name: "Mike Chen",
+    name: "MIKE_CHEN",
+    nodeId: "NODE_M405",
     avatar: "MC",
-    lastMessage: "Let's schedule that coffee meeting next week",
-    timestamp: "1 hour ago",
+    lastMessage: "Requesting node relay for coffee meeting.",
+    timestamp: "13:45",
     unread: 0,
-    online: false
+    online: false,
+    sector: "Cybersecurity"
   },
   {
     id: 3,
-    name: "Emma Wilson",
+    name: "EMMA_WILSON",
+    nodeId: "NODE_E901",
     avatar: "EW",
-    lastMessage: "The Netflix referral program is really helpful",
-    timestamp: "3 hours ago",
+    lastMessage: "Asset referral program initialized.",
+    timestamp: "10:30",
     unread: 1,
-    online: true
-  },
-  {
-    id: 4,
-    name: "David Rodriguez",
-    avatar: "DR",
-    lastMessage: "I'll send you the design portfolio examples",
-    timestamp: "Yesterday",
-    unread: 0,
-    online: false
+    online: true,
+    sector: "DevOps"
   }
 ];
 
@@ -51,36 +61,22 @@ const mockMessages = [
   {
     id: 1,
     senderId: 1,
-    content: "Hi John! I saw your profile and noticed you work at Tech Corp. I'm interested in transitioning to a similar role.",
-    timestamp: "2:30 PM",
+    content: "IDENTITY BROADCAST: Requesting insights on Tech Corp transition protocol.",
+    timestamp: "14:10",
     isOwnMessage: false
   },
   {
     id: 2,
     senderId: "current",
-    content: "Hi Sarah! I'd be happy to help. Tech Corp is a great place to work. What specific questions do you have?",
-    timestamp: "2:35 PM",
+    content: "ACKNOWLEDGMENT: Tech Corp operational standards are high. Technical coding phase is critical.",
+    timestamp: "14:12",
     isOwnMessage: true
   },
   {
     id: 3,
     senderId: 1,
-    content: "I'm mainly curious about the interview process and what skills they value most for senior engineering roles.",
-    timestamp: "2:37 PM",
-    isOwnMessage: false
-  },
-  {
-    id: 4,
-    senderId: "current",
-    content: "The interview process typically has 4 rounds: initial screening, technical coding, system design, and behavioral. They really value problem-solving skills and cultural fit. I can share some specific tips if you'd like.",
-    timestamp: "2:40 PM",
-    isOwnMessage: true
-  },
-  {
-    id: 5,
-    senderId: 1,
-    content: "Thanks for the advice about the interview process!",
-    timestamp: "2:42 PM",
+    content: "QUERY: Which specific skill nodes are prioritized for L5 roles?",
+    timestamp: "14:15",
     isOwnMessage: false
   }
 ];
@@ -97,8 +93,8 @@ export const Messages = () => {
       const message = {
         id: messages.length + 1,
         senderId: "current",
-        content: newMessage,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        content: newMessage.toUpperCase(),
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
         isOwnMessage: true
       };
       
@@ -114,213 +110,206 @@ export const Messages = () => {
     }
   };
 
-  const handleConversationSelect = (conversation) => {
-    setSelectedConversation(conversation);
-    // On mobile, hide conversation list when a chat is selected
-    setShowConversationList(false);
-  };
-
-  const handleBackToConversations = () => {
-    setShowConversationList(true);
-  };
-
   const filteredConversations = mockConversations.filter(conv =>
     conv.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
-    <div className="relative">
-      {/* Coming Soon Overlay */}
-      <div className="absolute inset-0 bg-background/60 backdrop-blur-md flex items-center justify-center z-50">
-        <div className="text-center space-y-2 p-4">
-          <h2 className="text-xl md:text-2xl font-bold">Coming Soon 🚀</h2>
-          <p className="text-sm md:text-base text-muted-foreground">This feature will be available in a future update</p>
+    <div className="flex h-[calc(100vh-4rem)] mt-16 overflow-hidden bg-background">
+      {/* COLUMN 1: COMMS NODES */}
+      <div className={cn(
+        "w-full md:w-[350px] border-r border-foreground/10 flex flex-col transition-all duration-300",
+        !showConversationList && "hidden md:flex"
+      )}>
+        <div className="p-6 border-b border-foreground/10">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-display font-black tracking-tighter uppercase">Comms_Nodes</h2>
+            <Radio className="size-4 text-safety-orange animate-pulse" />
+          </div>
+          <div className="relative group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground transition-colors group-focus-within:text-safety-orange" />
+            <Input
+              placeholder="FILTER_NODES..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 h-10 rounded-none bg-foreground/[0.02] border-foreground/10 font-mono text-[10px] uppercase tracking-widest focus-visible:ring-safety-orange"
+            />
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+          {filteredConversations.map((conv) => (
+            <div
+              key={conv.id}
+              onClick={() => { setSelectedConversation(conv); setShowConversationList(false); }}
+              className={cn(
+                "p-5 cursor-pointer border-b border-foreground/5 transition-all hover:bg-foreground/[0.02]",
+                selectedConversation.id === conv.id && "bg-foreground/[0.03] border-l-2 border-l-safety-orange"
+              )}
+            >
+              <div className="flex gap-4">
+                <div className="relative">
+                  <Avatar className="size-12 rounded-none border border-foreground/10">
+                    <AvatarFallback className="bg-foreground/5 text-xs font-mono">{conv.avatar}</AvatarFallback>
+                  </Avatar>
+                  {conv.online && <div className="absolute -bottom-1 -right-1 size-3 bg-safety-orange industrial-border" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-start mb-1">
+                    <span className="text-[11px] font-mono tracking-widest text-muted-foreground">{conv.nodeId}</span>
+                    <span className="text-[9px] font-mono text-muted-foreground">{conv.timestamp}</span>
+                  </div>
+                  <h4 className="font-display font-bold text-sm tracking-tight text-foreground uppercase">{conv.name}</h4>
+                  <p className="text-[10px] font-mono text-muted-foreground truncate uppercase mt-1">
+                    {conv.lastMessage}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Main Messages Container - Responsive to navbar and sidebar */}
-      <div className="h-[calc(100vh-4rem)] md:h-[calc(100vh-4rem)] md:ml-0 flex bg-background">
-        {/* Conversations List */}
-        <div className={cn(
-          "w-full md:w-80 border-r border-border transition-transform duration-300 ease-in-out",
-          "md:translate-x-0 md:relative md:block",
-          showConversationList ? "translate-x-0" : "-translate-x-full absolute md:relative z-30"
-        )}>
-          <Card className="h-full rounded-none border-0">
-            <CardHeader className="pb-3 pt-4 md:pt-6">
-              <div className="flex items-center justify-between md:justify-start">
-                <h2 className="text-lg md:text-xl font-semibold">Messages</h2>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="md:hidden"
-                  onClick={() => setShowConversationList(false)}
-                >
-                  <Menu className="h-5 w-5" />
-                </Button>
+      {/* COLUMN 2: MESSAGE FEED */}
+      <div className={cn(
+        "flex-1 flex flex-col relative",
+        showConversationList && "hidden md:flex"
+      )}>
+        {/* Feed Header */}
+        <div className="h-20 border-b border-foreground/10 flex items-center justify-between px-6 bg-background/50 backdrop-blur-xl z-20">
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setShowConversationList(true)}
+              className="md:hidden p-2 -ml-2 hover:text-safety-orange transition-colors"
+            >
+              <ArrowLeft className="size-5" />
+            </button>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="size-2 bg-safety-orange animate-pulse" />
+                <h3 className="text-sm font-display font-black uppercase tracking-widest">{selectedConversation.name}</h3>
               </div>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search conversations..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 text-sm"
-                />
-              </div>
-            </CardHeader>
-            <CardContent className="p-0 overflow-y-auto flex-1">
-              <div className="space-y-1">
-                {filteredConversations.map((conversation) => (
-                  <div
-                    key={conversation.id}
-                    onClick={() => handleConversationSelect(conversation)}
-                    className={cn(
-                      "p-3 md:p-4 cursor-pointer hover:bg-muted/50 transition-colors",
-                      selectedConversation.id === conversation.id && "bg-muted"
-                    )}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="relative">
-                        <Avatar className="h-10 w-10 md:h-12 md:w-12">
-                          <AvatarImage src={`/placeholder-${conversation.id}.jpg`} />
-                          <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-                            {conversation.avatar}
-                          </AvatarFallback>
-                        </Avatar>
-                        {conversation.online && (
-                          <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-500 rounded-full border-2 border-background"></div>
-                        )}
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <h4 className="font-medium truncate text-sm md:text-base">{conversation.name}</h4>
-                          <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">{conversation.timestamp}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <p className="text-xs md:text-sm text-muted-foreground truncate">
-                            {conversation.lastMessage}
-                          </p>
-                          {conversation.unread > 0 && (
-                            <Badge className="ml-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-blue-500 hover:bg-blue-500">
-                              {conversation.unread}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Chat Area */}
-        <div className={cn(
-          "flex-1 flex flex-col",
-          "md:relative",
-          showConversationList ? "hidden md:flex" : "flex"
-        )}>
-          {/* Chat Header */}
-          <div className="border-b border-border p-3 md:p-4 bg-background">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="md:hidden -ml-2"
-                  onClick={handleBackToConversations}
-                >
-                  <ArrowLeft className="h-5 w-5" />
-                </Button>
-                <div className="relative">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={`/placeholder-${selectedConversation.id}.jpg`} />
-                    <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-                      {selectedConversation.avatar}
-                    </AvatarFallback>
-                  </Avatar>
-                  {selectedConversation.online && (
-                    <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-500 rounded-full border-2 border-background"></div>
-                  )}
-                </div>
-                <div>
-                  <h3 className="font-semibold text-sm md:text-base">{selectedConversation.name}</h3>
-                  <p className="text-xs md:text-sm text-muted-foreground">
-                    {selectedConversation.online ? "Online" : "Last seen recently"}
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-1">
-                <Button variant="ghost" size="icon" className="h-8 w-8 md:h-10 md:w-10">
-                  <Phone className="h-4 w-4 md:h-5 md:w-5" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 md:h-10 md:w-10">
-                  <Video className="h-4 w-4 md:h-5 md:w-5" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 md:h-10 md:w-10">
-                  <MoreVertical className="h-4 w-4 md:h-5 md:w-5" />
-                </Button>
-              </div>
+              <p className="text-[10px] font-mono text-muted-foreground uppercase mt-0.5 tracking-tighter">
+                ACTIVE_RELAY // SECTOR: {selectedConversation.sector}
+              </p>
             </div>
           </div>
-
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4 bg-muted/20">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={cn(
-                  "flex",
-                  message.isOwnMessage ? "justify-end" : "justify-start"
-                )}
-              >
-                <div
-                  className={cn(
-                    "max-w-[85%] md:max-w-[70%] p-3 rounded-lg",
-                    message.isOwnMessage
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-background shadow-sm border"
-                  )}
-                >
-                  <p className="text-sm md:text-base leading-relaxed">{message.content}</p>
-                  <p className={cn(
-                    "text-xs mt-1",
-                    message.isOwnMessage ? "text-primary-foreground/80" : "text-muted-foreground"
-                  )}>
-                    {message.timestamp}
-                  </p>
-                </div>
-              </div>
-            ))}
+          <div className="flex items-center gap-2">
+             <StatusBadge status={selectedConversation.online ? "online" : "offline"} text={selectedConversation.online ? "STABLE" : "STANDBY"} />
+             <IndustrialButton variant="outline" className="size-10 p-0">
+                <MoreVertical className="size-4" />
+             </IndustrialButton>
           </div>
+        </div>
 
-          {/* Message Input */}
-          <div className="border-t border-border p-3 md:p-4 bg-background">
-            <div className="flex space-x-2">
-              <Input
-                placeholder="Type a message..."
+        {/* Message Stream */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] bg-fixed overflow-x-hidden custom-scrollbar">
+          {messages.map((msg) => (
+            <div
+              key={msg.id}
+              className={cn(
+                "flex flex-col max-w-[80%] md:max-w-[60%] animate-in fade-in slide-in-from-bottom-2",
+                msg.isOwnMessage ? "ml-auto items-end" : "mr-auto items-start"
+              )}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                 <span className="text-[9px] font-mono text-muted-foreground uppercase">{msg.isOwnMessage ? "USER_MASTER" : selectedConversation.name}</span>
+                 <span className="text-[9px] font-mono text-muted-foreground opacity-50">{msg.timestamp}</span>
+              </div>
+              <div className={cn(
+                "p-4 border font-mono text-xs md:text-sm leading-relaxed tracking-tight relative overflow-hidden",
+                msg.isOwnMessage 
+                  ? "bg-safety-orange/5 border-safety-orange/30 text-foreground" 
+                  : "bg-foreground/[0.03] border-foreground/10 text-muted-foreground"
+              )}>
+                {/* Visual accent for own messages */}
+                {msg.isOwnMessage && <div className="absolute top-0 right-0 size-2 bg-safety-orange" />}
+                <p>{msg.content}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Transmit Input */}
+        <div className="p-6 border-t border-foreground/10 bg-background">
+          <div className="flex gap-4">
+            <div className="flex-1 relative">
+              <textarea
+                placeholder="INPUT_TRANSMISSION..."
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                className="flex-1 text-sm md:text-base"
+                onKeyDown={handleKeyPress}
+                rows={1}
+                className="w-full h-12 p-3 bg-foreground/[0.02] border border-foreground/10 rounded-none font-mono text-xs uppercase tracking-widest focus:outline-none focus:ring-1 focus:ring-safety-orange resize-none"
               />
-              <Button 
-                onClick={handleSendMessage}
-                disabled={!newMessage.trim()}
-                size="icon"
-                className="h-10 w-10 md:h-auto md:w-auto md:px-4 shrink-0"
-              >
-                <Send className="h-4 w-4" />
-                <span className="hidden md:inline ml-2">Send</span>
-              </Button>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-3">
+                 <button className="text-muted-foreground hover:text-safety-orange transition-colors">
+                    <Paperclip className="size-4" />
+                 </button>
+              </div>
             </div>
+            <IndustrialButton 
+              variant="safety" 
+              onClick={handleSendMessage}
+              disabled={!newMessage.trim()}
+              className="h-12 px-8 flex items-center gap-2"
+            >
+              <span className="hidden md:inline">TRANSMIT</span>
+              <Send className="size-4" />
+            </IndustrialButton>
+          </div>
+          <div className="mt-3 flex items-center justify-between text-[8px] font-mono text-muted-foreground tracking-[0.2em]">
+             <span>ENCRYPTION: AES-256_ACTIVE</span>
+             <span>RELAY: {selectedConversation.nodeId}</span>
           </div>
         </div>
+      </div>
+
+      {/* COLUMN 3: NODE INTEL (DESKTOP ONLY) */}
+      <div className="hidden lg:flex w-[300px] border-l border-foreground/10 flex-col bg-foreground/[0.01]">
+         <div className="p-8 space-y-8">
+            <div className="space-y-4">
+               <h4 className="text-[10px] font-mono uppercase tracking-[0.4em] text-muted-foreground border-b border-foreground/5 pb-2">Node_Identity</h4>
+               <Avatar className="size-32 rounded-none border border-foreground/10 grayscale">
+                  <AvatarFallback className="text-4xl font-display font-black bg-foreground/5">{selectedConversation.avatar}</AvatarFallback>
+               </Avatar>
+               <div>
+                  <h2 className="text-2xl font-display font-black tracking-tighter uppercase">{selectedConversation.name}</h2>
+                  <p className="text-[10px] font-mono text-safety-orange mt-1 uppercase tracking-widest">Verified_Asset</p>
+               </div>
+            </div>
+
+            <div className="space-y-4">
+               <h4 className="text-[10px] font-mono uppercase tracking-[0.4em] text-muted-foreground border-b border-foreground/5 pb-2">Technical_Specs</h4>
+               <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                     <Cpu className="size-3 text-muted-foreground" />
+                     <span className="text-[10px] font-mono uppercase text-foreground">L5 ENGINEER</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                     <Shield className="size-3 text-muted-foreground" />
+                     <span className="text-[10px] font-mono uppercase text-foreground">ALUMNI_VERIFIED</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                     <Terminal className="size-3 text-muted-foreground" />
+                     <span className="text-[10px] font-mono uppercase text-foreground">{selectedConversation.sector}</span>
+                  </div>
+               </div>
+            </div>
+
+            <div className="space-y-4">
+               <h4 className="text-[10px] font-mono uppercase tracking-[0.4em] text-muted-foreground border-b border-foreground/5 pb-2">Operational_Links</h4>
+               <div className="flex flex-wrap gap-2">
+                  <IndustrialButton variant="outline" className="w-full text-[9px] uppercase font-mono tracking-widest h-8">
+                     <Share2 className="mr-2 size-3" /> Export Comms
+                  </IndustrialButton>
+                  <IndustrialButton variant="outline" className="w-full text-[9px] uppercase font-mono tracking-widest h-8">
+                     <Activity className="mr-2 size-3" /> Connectivity Log
+                  </IndustrialButton>
+               </div>
+            </div>
+         </div>
       </div>
     </div>
   );
-};
+};

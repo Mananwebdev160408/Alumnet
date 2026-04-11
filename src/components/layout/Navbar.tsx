@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, Bell, GraduationCap, LogOut, Settings, User, Hexagon } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -8,142 +8,121 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
-import {
-  Bell,
-  Search,
-  Menu,
-  GraduationCap,
-  LogOut,
-  Settings,
-  User,
-} from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
-import { api } from "../../../axios.js";
+import { CommandPalette } from "../CommandPalette";
 import axios from "axios";
 
 export const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
+  const [isDark, setIsDark] = useState(document.documentElement.classList.contains("dark"));
 
-  // Mock auth state - replace with real auth later
+  // Mock auth state
   const isAuthenticated = !location.pathname.startsWith("/auth");
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/directory?search=${encodeURIComponent(searchQuery)}`);
-    }
-  };
-  const [isDark, setIsDark] = useState(false);
-
   const handleLogout = async () => {
-    // Mock logout - navigate to login
-    await axios.post(
-      "http://localhost:3000/api/v1/users/logout",
-      {},
-      {
-        withCredentials: true,
-      }
-    );
+    try {
+      await axios.post("http://localhost:3000/api/v1/users/logout", {}, { withCredentials: true });
+    } catch (e) {
+      console.error("Logout failed", e);
+    }
     navigate("/auth/login");
   };
 
-  if (!isAuthenticated) {
-    return null;
-  }
   const toggleTheme = () => {
-    if (isDark) {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-      setIsDark(false);
-    } else {
+    const isNowDark = !isDark;
+    setIsDark(isNowDark);
+    if (isNowDark) {
       document.documentElement.classList.add("dark");
       localStorage.setItem("theme", "dark");
-      setIsDark(true);
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
     }
   };
 
+  if (!isAuthenticated && location.pathname !== '/') {
+    return null;
+  }
+
   return (
-    <nav className="bg-card border-b border-border shadow-soft sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="bg-primary p-2 rounded-lg">
-              <GraduationCap className="h-6 w-6 text-primary-foreground" />
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-foreground/10 h-16">
+      <div className="h-full px-4 lg:px-8 flex items-center justify-between">
+        {/* Left: Branding */}
+        <div className="flex items-center gap-6">
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="size-10 bg-foreground text-background flex items-center justify-center transition-transform group-hover:rotate-45">
+              <Hexagon className="size-6 fill-current" />
             </div>
-            <span className="text-xl font-bold text-gradient">Alumnet</span>
+            <div className="hidden sm:block">
+              <h1 className="text-xl font-display font-black tracking-tighter leading-none">
+                ALUMNET<span className="text-safety-orange">.SYS</span>
+              </h1>
+              <p className="text-[9px] font-mono text-muted-foreground uppercase tracking-[0.3em]">
+                Neural Network v1.0
+              </p>
+            </div>
           </Link>
+        </div>
 
-          {/* Search Bar */}
-          <div className="flex-1 max-w-md mx-8">
-            {/* <form onSubmit={handleSearch} className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Search alumni, students..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-muted/50 border-none focus:bg-background transition-colors"
-              />
-            </form> */}
-          </div>
+        {/* Center: Command Palette */}
+        <div className="hidden md:block flex-1 max-w-sm mx-10">
+          <CommandPalette />
+        </div>
 
-          {/* Right section */}
-          <div className="flex items-center space-x-4">
-            {/* Notifications */}
-            <button
-              onClick={toggleTheme}
-              className="relative inline-flex items-center justify-center w-14 h-8 bg-gray-200 dark:bg-gray-700 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
-              aria-label={
-                isDark ? "Switch to light mode" : "Switch to dark mode"
-              }
-            >
-              {/* Toggle Circle */}
-              <span
-                className={`absolute w-6 h-6 bg-white dark:bg-gray-200 rounded-full shadow-md transform transition-transform duration-300 flex items-center justify-center ${
-                  isDark ? "translate-x-3" : "-translate-x-3"
-                }`}
-              >
-                {isDark ? (
-                  <Moon className="w-3 h-3 text-gray-700" />
-                ) : (
-                  <Sun className="w-3 h-3 text-yellow-500" />
-                )}
-              </span>
-            </button>
-            {/* User Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="relative h-10 w-10 rounded-full"
-                >
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src="/placeholder-avatar.jpg" alt="Profile" />
-                    <AvatarFallback className="bg-primary text-primary-foreground">
-                      <User className="h-5 w-5" />
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuItem asChild>
-                  <Link to="/profile" className="flex items-center">
-                    <User className="mr-2 h-4 w-4" />
-                    Profile
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Log out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+        {/* Right: Actions */}
+        <div className="flex items-center gap-4">
+          {/* Theme Toggle */}
+          <button
+            onClick={toggleTheme}
+            className="size-10 flex items-center justify-center border border-foreground/10 hover:bg-foreground/5 transition-colors"
+            title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+          >
+            {isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
+          </button>
+
+          {/* Notifications */}
+          <button className="size-10 flex items-center justify-center border border-foreground/10 hover:bg-foreground/5 transition-colors relative">
+            <Bell className="size-4" />
+            <span className="absolute top-2 right-2 size-2 bg-safety-orange" />
+          </button>
+
+          {/* User Profile */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-2 pl-2 pr-1 h-10 border border-foreground/10 hover:bg-foreground/5 transition-colors">
+                <div className="text-right hidden sm:block">
+                  <p className="text-[10px] font-mono font-bold leading-none uppercase">Agent #01</p>
+                  <p className="text-[9px] font-mono text-muted-foreground">Level 4 Admin</p>
+                </div>
+                <Avatar className="size-8 rounded-none">
+                  <AvatarImage src="/avatar.jpg" />
+                  <AvatarFallback className="bg-foreground text-background uppercase font-mono text-[10px] font-bold">
+                    AG
+                  </AvatarFallback>
+                </Avatar>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 font-mono p-1 border-foreground">
+              <div className="px-2 py-1.5 text-[10px] uppercase text-muted-foreground tracking-widest">
+                Unit Profile
+              </div>
+              <DropdownMenuItem onClick={() => navigate("/profile")} className="text-xs uppercase">
+                <User className="mr-2 size-4" />
+                View Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/settings")} className="text-xs uppercase">
+                <Settings className="mr-2 size-4" />
+                System Settings
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-foreground/10" />
+              <DropdownMenuItem onClick={handleLogout} className="text-xs uppercase text-destructive">
+                <LogOut className="mr-2 size-4" />
+                Terminate Session
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </nav>
