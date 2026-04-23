@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
 // Layout
 import { Layout } from "./components/layout/Layout";
@@ -20,7 +20,7 @@ import { Settings } from "./pages/Settings";
 
 // Auth pages
 import { Login } from "./pages/auth/Login";
-import { Signup } from "./pages/auth/Signup";
+import { RegisterOrg } from "./pages/auth/RegisterOrg";
 
 import NotFound from "./pages/NotFound";
 import AlumnetProfilePage from "./pages/AlumniProfile";
@@ -30,13 +30,38 @@ import { SuperAdminDashboard } from "./pages/SuperAdminDashboard";
 import { CollegeAdminDashboard } from "./pages/CollegeAdminDashboard";
 import { SuperAdminColleges } from "./pages/SuperAdminColleges";
 import { AdminUsers } from "./pages/AdminUsers";
+import LandingPage from "./pages/LandingPage";
 
 import { AuthProvider } from "./lib/AuthContext";
+import { useAuth } from "./lib/AuthContext";
+import { ThemeProvider } from "./components/theme-provider";
 
 const queryClient = new QueryClient();
 
+const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+  const { currentUser, loading } = useAuth();
+  const location = useLocation();
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="border-2 border-border bg-card px-6 py-4 text-[10px] font-black uppercase tracking-[0.28em] text-foreground/70">
+          Verifying Access...
+        </div>
+      </div>
+    );
+  }
+
+  if (!currentUser) {
+    return <Navigate to="/auth/login" state={{ from: location }} replace />;
+  }
+
+  return children;
+};
+
 const App = () => (
-  <AuthProvider>
+  <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+    <AuthProvider>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
@@ -45,29 +70,29 @@ const App = () => (
           <Layout>
             <Routes>
               {/* Main App Routes */}
-              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/about" element={<About />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/directory" element={<Directory />} />
-              <Route path="/ai-chat" element={<AIChat />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/" element={<Index/>} />
+              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/directory" element={<ProtectedRoute><Directory /></ProtectedRoute>} />
+              <Route path="/ai-chat" element={<ProtectedRoute><AIChat /></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+              <Route path="/" element={<LandingPage />} />
               <Route path="/apply" element={<Apply />} />
               
               {/* Admin Routes */}
-              <Route path="/admin/global" element={<SuperAdminDashboard />} />
-              <Route path="/admin/global/colleges" element={<SuperAdminColleges />} />
-              <Route path="/admin/college" element={<CollegeAdminDashboard />} />
-              <Route path="/admin/college/users" element={<AdminUsers />} />
+              <Route path="/admin/global" element={<ProtectedRoute><SuperAdminDashboard /></ProtectedRoute>} />
+              <Route path="/admin/global/colleges" element={<ProtectedRoute><SuperAdminColleges /></ProtectedRoute>} />
+              <Route path="/admin/college" element={<ProtectedRoute><CollegeAdminDashboard /></ProtectedRoute>} />
+              <Route path="/admin/college/users" element={<ProtectedRoute><AdminUsers /></ProtectedRoute>} />
 
-              <Route path="/messages" element={<Messages />} />
-              <Route path="/alumni/:id" element={<AlumnetProfilePage/>}/>
-              <Route path="/connections" element={<Connections />} />
-              <Route path="/mentorship" element={<Mentorship />} />
+              <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+              <Route path="/alumni/:id" element={<ProtectedRoute><AlumnetProfilePage/></ProtectedRoute>}/>
+              <Route path="/connections" element={<ProtectedRoute><Connections /></ProtectedRoute>} />
+              <Route path="/mentorship" element={<ProtectedRoute><Mentorship /></ProtectedRoute>} />
               
               {/* Auth Routes */}
               <Route path="/auth/login" element={<Login />} />
-              <Route path="/auth/signup" element={<Signup />} />
+              <Route path="/auth/register-org" element={<RegisterOrg />} />
               
               {/* Catch-all route */}
               <Route path="*" element={<NotFound />} />
@@ -76,7 +101,8 @@ const App = () => (
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
-  </AuthProvider>
+    </AuthProvider>
+  </ThemeProvider>
 );
 
 export default App;

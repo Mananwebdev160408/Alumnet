@@ -1,198 +1,221 @@
-import { IndustrialButton } from "@/components/IndustrialButton";
-import { GlassCard } from "@/components/GlassCard";
-import { StatusBadge } from "@/components/StatusBadge";
+import { Link } from "react-router-dom";
 import { 
-  Users, 
+  ArrowRight, 
+  Calendar, 
+  Video, 
+  Network, 
+  Award, 
+  TrendingUp, 
   MessageCircle, 
-  GraduationCap, 
-  Zap, 
-  Bell, 
+  Plus,
+  ChevronLeft,
   ChevronRight,
-  Search,
-  ArrowUpRight,
-  Globe,
-  Radio
+  ShieldCheck,
+  Flower,
+  Sparkles
 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+
+const FADE_UP = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as const },
+};
 
 export const Dashboard = () => {
-  const broadcasts = [
-    { id: 1, title: "Career Fair: Tech Sector", loc: "Virtual Hub", time: "2h ago" },
-    { id: 2, title: "Alumni Meet: Bangalore", loc: "Sector 4", time: "5h ago" },
-  ];
-
-  const onlinePeers = [
-    { id: 'AG-72', name: "Alex Riv", role: "SDE @ Google", status: "online" as const },
-    { id: 'AG-44', name: "Mina Sun", role: "Founder @ Neo", status: "away" as const },
-    { id: 'AG-12', name: "Jordan K", role: "PhD @ Stanford", status: "online" as const },
-  ];
-
   return (
-    <div className="p-4 lg:p-8 space-y-8 mt-16 max-w-[1600px] mx-auto">
-      {/* Header Area */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-foreground/10 pb-8">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <div className="size-2 bg-safety-orange animate-pulse" />
-            <p className="text-[10px] font-mono uppercase tracking-[0.4em] text-muted-foreground">Authorized Connection Active</p>
-          </div>
-          <h1 className="text-4xl lg:text-6xl font-display font-black tracking-tighter uppercase leading-none">
-            Welcome, <span className="text-safety-orange">Agent #01</span>
-          </h1>
-          <p className="text-muted-foreground font-mono text-xs uppercase tracking-widest mt-4">
-            Unit: IIT Delhi Infrastructure // Node Access: Level 4
+    <div className="space-y-16 font-serif pb-20">
+      {/* 1. Welcome Hero Section */}
+      <motion.section 
+        {...FADE_UP}
+        className="relative overflow-hidden border-4 border-border bg-card/50 p-10 md:p-16 flex flex-col lg:flex-row items-center justify-between group shadow-[16px_16px_0px_0px_#1A1A1A] dark:shadow-[16px_16px_0px_0px_#000]"
+      >
+        <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
+          <Flower className="size-80" />
+        </div>
+        <div className="relative z-10 max-w-2xl">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="inline-block border-2 border-border bg-primary/10 px-6 py-2 text-[10px] font-bold uppercase tracking-[0.4em] mb-8 italic"
+          >
+            Current Era: Reiwa // 令和六年
+          </motion.div>
+          <h2 className="text-6xl font-bold text-foreground tracking-tighter mb-8 leading-none italic">
+            Greetings, <span className="text-primary">Sarah</span>
+          </h2>
+          <p className="text-xl text-foreground/80 font-medium leading-relaxed italic border-l-4 border-primary pl-8 mb-12">
+            "The river of your lineage grows. Your network has blossomed by <span className="text-primary font-black underline underline-offset-4 decoration-2">12 new kindred</span> this cycle. Three rites of mentorship await your wisdom today."
           </p>
-        </div>
-        <div className="flex gap-3">
-          <div className="text-right hidden md:block mr-4">
-            <p className="text-[10px] font-mono text-muted-foreground uppercase">Network Latency</p>
-            <p className="text-sm font-mono font-bold uppercase">12ms <span className="text-emerald-500">OPTIMAL</span></p>
+          <div className="flex flex-wrap gap-8">
+            <Button className="h-16 px-10 bg-primary text-white rounded-none font-bold uppercase tracking-[0.2em] flex items-center gap-4 hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all shadow-[8px_8px_0px_0px_#1A1A1A] dark:shadow-[8px_8px_0px_0px_#000] text-xs italic">
+              Begin a Rite <ArrowRight className="size-5" />
+            </Button>
+            <Button variant="outline" className="h-16 px-10 border-2 border-border bg-transparent text-foreground rounded-none font-bold uppercase tracking-[0.2em] hover:bg-card transition-all shadow-[6px_6px_0px_0px_#1A1A1A] dark:shadow-[6px_6px_0px_0px_#000] text-xs italic">
+              View Scrolls
+            </Button>
           </div>
-          <IndustrialButton variant="outline" size="icon" className="size-12">
-            <Bell className="size-5" />
-          </IndustrialButton>
-          <IndustrialButton variant="safety" size="lg" className="h-12 px-8">
-            New Broadcast
-          </IndustrialButton>
         </div>
-      </div>
+        <div className="hidden lg:block relative mt-12 lg:mt-0">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9, rotate: -5 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            transition={{ delay: 0.4, duration: 1 }}
+            className="w-80 h-64 border-4 border-border bg-card p-2 shadow-[12px_12px_0px_0px_#1A1A1A] dark:shadow-[12px_12px_0px_0px_#000] overflow-hidden"
+          >
+            <img 
+              alt="Zen Workspace" 
+              className="w-full h-full object-cover grayscale-[0.4] hover:grayscale-0 transition-all duration-700" 
+              src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80" 
+            />
+          </motion.div>
+          <div className="absolute -bottom-6 -right-6 writing-vertical text-[10px] font-black text-primary uppercase tracking-[1em] italic select-none">
+            静寂
+          </div>
+        </div>
+      </motion.section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left Column: Broadcasts */}
-        <div className="lg:col-span-3 space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-[11px] font-mono uppercase tracking-widest flex items-center gap-2">
-              <Radio className="size-3 text-safety-orange" />
-              Official Stream
-            </h3>
-            <span className="text-[9px] font-mono text-muted-foreground">LIVE_FEED</span>
+      {/* 2. Stats Section */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-10">
+        {[
+          { label: "Rites this cycle", value: "24", icon: Video, color: "text-primary", trend: "+12% from last cycle", subIcon: TrendingUp },
+          { label: "Kindred bonds", value: "842", icon: Network, color: "text-accent", trend: "42 spirits seeking link", subIcon: Flower },
+          { label: "Honor Points", value: "12,450", icon: Award, color: "text-primary", trend: "Grandmaster Status", subIcon: ShieldCheck }
+        ].map((stat, i) => (
+          <motion.div 
+            key={i} 
+            {...FADE_UP}
+            transition={{ delay: 0.1 * i }}
+            className="japanese-card bg-card/60 group hover:translate-y-[-6px] transition-all duration-500 border-2 border-border/50 p-8"
+          >
+            <div className={`w-16 h-16 border-2 border-border bg-background flex items-center justify-center ${stat.color} mb-10 shadow-[6px_6px_0px_0px_#1A1A1A] dark:shadow-[6px_6px_0px_0px_#000] group-hover:rotate-[15deg] transition-all duration-500`}>
+              <stat.icon className="size-8" />
+            </div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-foreground/40 mb-3 italic">{stat.label}</p>
+            <h3 className="text-5xl font-bold text-foreground tracking-tighter">{stat.value}</h3>
+            <div className={`mt-8 flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.2em] ${stat.color} opacity-80 italic`}>
+              <stat.subIcon className="size-4" />
+              <span>{stat.trend}</span>
+            </div>
+          </motion.div>
+        ))}
+      </section>
+
+      {/* 3. Main Content Split */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-20">
+        {/* Upcoming Rites */}
+        <motion.div {...FADE_UP} className="xl:col-span-5">
+          <div className="flex justify-between items-end mb-12 pb-4 border-b-2 border-border/20">
+            <h4 className="text-3xl font-bold tracking-tighter text-foreground italic flex items-center gap-4">
+              Pending Rites <Sparkles className="size-5 text-primary" />
+            </h4>
+            <button className="text-[10px] font-black text-primary uppercase tracking-[0.3em] hover:underline mb-1 italic">All Scrolls</button>
           </div>
-          
-          <div className="space-y-4">
-            {broadcasts.map((b) => (
-              <GlassCard key={b.id} className="p-3 border-foreground/5 hover:border-safety-orange/20 cursor-pointer group">
-                <p className="text-[9px] font-mono text-safety-orange uppercase mb-1">{b.time}</p>
-                <h4 className="text-xs font-display font-bold uppercase tracking-wider mb-2 group-hover:text-safety-orange transition-colors">
-                  {b.title}
-                </h4>
-                <div className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground italic">
-                  <span>@ {b.loc}</span>
+          <div className="space-y-4 relative">
+            <div className="absolute left-8 top-0 bottom-0 w-px bg-border/20"></div>
+            
+            {[
+              { time: "Today • 2:00 PM", title: "Portfolio Wisdom", name: "Marcus J.", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=50&h=50", active: true },
+              { time: "Tomorrow • 10:00 AM", title: "Path Seekers Q&A", name: "Dr. Helena Ray", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=50&h=50", active: false }
+            ].map((rite, i) => (
+              <motion.div 
+                key={i} 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 + (i * 0.1) }}
+                className="relative pl-16 pb-12 group"
+              >
+                <div className={`absolute left-[28px] top-2 size-4 border-2 border-border z-10 rotate-45 transition-all duration-500 group-hover:rotate-[225deg] ${rite.active ? 'bg-primary shadow-[0_0_15px_rgba(212,61,97,0.5)]' : 'bg-background'}`}></div>
+                <div className="japanese-card bg-card/40 p-8 group-hover:bg-card/80 group-hover:translate-x-2 transition-all duration-500 border border-border/10 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)]">
+                  <span className={`text-[10px] font-black uppercase tracking-[0.3em] block mb-3 italic ${rite.active ? 'text-primary' : 'text-foreground/30'}`}>{rite.time}</span>
+                  <h5 className="font-bold text-xl text-foreground mb-6 tracking-tight italic">{rite.title}</h5>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="size-10 border-2 border-border grayscale hover:grayscale-0 transition-all rotate-3 group-hover:rotate-0 overflow-hidden">
+                        <img className="w-full h-full object-cover" src={rite.img} alt={rite.name} />
+                      </div>
+                      <span className="text-[11px] font-bold text-foreground/50 uppercase tracking-widest italic">with {rite.name}</span>
+                    </div>
+                    <Button variant="ghost" size="icon" className="size-10 border border-border/20 rounded-none hover:bg-primary hover:text-white transition-all">
+                      <ArrowRight className="size-4" />
+                    </Button>
+                  </div>
                 </div>
-              </GlassCard>
+              </motion.div>
             ))}
-            <button className="w-full py-3 border border-dashed border-foreground/10 text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground hover:border-foreground/20 hover:text-foreground transition-all">
-              Load Archive Data
-            </button>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Center Column: Activity Stream */}
-        <div className="lg:col-span-6 space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-[11px] font-mono uppercase tracking-widest">Activity Node Stream</h3>
-            <div className="flex gap-4">
-              {['All', 'Mentorship', 'Units'].map(f => (
-                <button key={f} className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground hover:text-foreground">
-                  [{f}]
-                </button>
-              ))}
+        {/* Suggested Mentors */}
+        <motion.div {...FADE_UP} className="xl:col-span-7">
+          <div className="flex justify-between items-end mb-12 pb-4 border-b-2 border-border/20">
+            <h4 className="text-3xl font-bold tracking-tighter text-foreground italic">Kindred Spirits</h4>
+            <div className="flex gap-6 mb-1">
+              <Button variant="ghost" size="icon" className="size-10 border-2 border-border bg-card shadow-[4px_4px_0px_0px_#1A1A1A] dark:shadow-[4px_4px_0px_0px_#000] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all">
+                <ChevronLeft className="size-5" />
+              </Button>
+              <Button variant="ghost" size="icon" className="size-10 border-2 border-border bg-card shadow-[4px_4px_0px_0px_#1A1A1A] dark:shadow-[4px_4px_0px_0px_#000] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all">
+                <ChevronRight className="size-5" />
+              </Button>
             </div>
           </div>
-
-          <div className="space-y-4">
-            {/* Connection Request Card */}
-            <GlassCard className="p-6 border-electric-blue/20 bg-electric-blue/[0.02] relative overflow-hidden staggered-reveal">
-               <div className="absolute top-0 right-0 p-2 opacity-10">
-                 <Zap className="size-12 text-electric-blue" />
-               </div>
-               <div className="flex items-start gap-4">
-                  <Avatar className="size-12 rounded-none border border-electric-blue/30">
-                    <AvatarFallback className="bg-electric-blue text-black font-bold font-mono">SC</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="text-xs font-display font-bold uppercase tracking-wider">Sarah Chen</p>
-                      <StatusBadge status="verified" label="ALUMNI_18" />
-                    </div>
-                    <p className="text-[11px] text-muted-foreground font-mono leading-relaxed mb-4">
-                      Requested a mentorship session regarding: <span className="text-foreground">"Neural Architecture Design"</span>
-                    </p>
-                    <div className="flex gap-3">
-                      <IndustrialButton variant="electric" size="sm" className="h-8">Initialize link</IndustrialButton>
-                      <IndustrialButton variant="outline" size="sm" className="h-8">Details</IndustrialButton>
-                    </div>
+          <div className="flex gap-10 overflow-x-auto pb-10 snap-x no-scrollbar">
+            {[
+              { name: "Alex Rivera", role: "Master Artisan @ Stripe", tags: ["Fintech", "Arts"], score: "98%", img: "https://images.unsplash.com/photo-1573164713988-862a3b2b003a?auto=format&fit=crop&q=80&w=150&h=150" },
+              { name: "Sarah Drasner", role: "Arch-Engineer @ Google", tags: ["Architecture", "Zen"], score: "92%", img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150&h=150" }
+            ].map((mentor, i) => (
+              <motion.div 
+                key={i} 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.4 + (i * 0.1) }}
+                className="min-w-[360px] snap-start border-4 border-border bg-card/80 p-10 text-center shadow-[16px_16px_0px_0px_#1A1A1A] dark:shadow-[16px_16px_0px_0px_#000] group hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all duration-500"
+              >
+                <div className="relative size-32 mx-auto mb-10">
+                  <div className="absolute inset-0 border-2 border-border rotate-45 group-hover:rotate-[225deg] transition-transform duration-1000 bg-primary/5"></div>
+                  <div className="absolute inset-3 border-4 border-border overflow-hidden bg-card z-10 rotate-3 group-hover:rotate-0 transition-transform">
+                    <img className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" src={mentor.img} alt={mentor.name} />
                   </div>
-               </div>
-            </GlassCard>
-
-            {/* General Activity */}
-            {[1, 2].map(i => (
-              <GlassCard key={i} className="p-6 border-foreground/5 hover:border-foreground/10 staggered-reveal">
-                <div className="flex gap-4">
-                  <div className="size-10 industrial-border bg-foreground/5 flex items-center justify-center grayscale text-muted-foreground">
-                    <Globe className="size-4" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-2">
-                       <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Protocol_Update // Connection</p>
-                       <p className="text-[9px] font-mono text-muted-foreground uppercase">14m ago</p>
-                    </div>
-                    <p className="text-xs font-mono">
-                      User <span className="text-foreground font-bold">James Miller</span> synchronized with the <span className="text-safety-orange italic">SF Tech Sector</span> node.
-                    </p>
+                  <div className="absolute -bottom-3 -right-3 bg-primary p-2 border-2 border-border z-20 shadow-[4px_4px_0px_0px_#1A1A1A] dark:shadow-[4px_4px_0px_0px_#000]">
+                    <ShieldCheck className="size-5 text-white" />
                   </div>
                 </div>
-              </GlassCard>
-            ))}
-          </div>
-        </div>
-
-        {/* Right Column: Node Connectivity */}
-        <div className="lg:col-span-3 space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-[11px] font-mono uppercase tracking-widest flex items-center gap-2">
-              <Users className="size-3 text-electric-blue" />
-              Active Nodes
-            </h3>
-            <span className="text-[9px] font-mono text-muted-foreground">PEER_TRACKING</span>
-          </div>
-
-          <GlassCard className="p-0 border-foreground/5 divide-y divide-foreground/5">
-            {onlinePeers.map((peer) => (
-              <div key={peer.id} className="p-4 flex items-center gap-4 hover:bg-foreground/[0.02] transition-colors group cursor-pointer">
-                <Avatar className="size-8 rounded-none border border-foreground/10 group-hover:border-foreground/30 transition-colors">
-                  <AvatarFallback className="text-[10px] font-mono uppercase">{peer.name.slice(0, 2)}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-display font-bold uppercase truncate tracking-wide">{peer.name}</p>
-                  <p className="text-[9px] font-mono text-muted-foreground uppercase truncate mt-0.5">{peer.role}</p>
+                <h5 className="text-2xl font-bold text-foreground mb-3 italic tracking-tight">{mentor.name}</h5>
+                <p className="text-[11px] font-black text-foreground/40 uppercase tracking-[0.3em] mb-8 italic">{mentor.role}</p>
+                <div className="flex flex-wrap justify-center gap-4 mb-10">
+                  {mentor.tags.map(tag => (
+                    <span key={tag} className="px-4 py-1.5 border-2 border-border/10 bg-background text-[10px] font-black uppercase tracking-widest italic hover:border-primary/50 transition-colors">{tag}</span>
+                  ))}
                 </div>
-                <StatusBadge status={peer.status} label={peer.status} className="border-none bg-transparent p-0" />
-              </div>
+                <div className="flex items-center justify-between mt-auto pt-8 border-t-2 border-border/10">
+                  <div className="text-left">
+                    <p className="text-[10px] font-black text-foreground/30 uppercase tracking-[0.3em] italic mb-1">Resonance</p>
+                    <p className="text-2xl font-bold text-primary tracking-tighter">{mentor.score}</p>
+                  </div>
+                  <Button className="size-16 bg-primary text-white rounded-none border-2 border-border shadow-[6px_6px_0px_0px_#1A1A1A] dark:shadow-[6px_6px_0px_0px_#000] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all flex items-center justify-center">
+                    <MessageCircle className="size-7" />
+                  </Button>
+                </div>
+              </motion.div>
             ))}
-            <div className="p-4 bg-foreground/[0.02]">
-              <IndustrialButton variant="outline" className="w-full text-[10px] uppercase font-mono tracking-widest">
-                Search Subnet
-              </IndustrialButton>
-            </div>
-          </GlassCard>
-
-          {/* Quick Stats Pod */}
-          <div className="p-6 border border-foreground/5 bg-foreground/[0.01] space-y-4">
-             <div className="flex justify-between items-center text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-               <span>Subnet Load</span>
-               <span>72%</span>
-             </div>
-             <div className="h-1 w-full bg-foreground/5 overflow-hidden">
-                <div className="h-full bg-safety-orange w-[72%]" />
-             </div>
-             <div className="flex justify-between items-center text-[9px] font-mono text-muted-foreground uppercase">
-                <span>Active Relays</span>
-                <span>12 Active</span>
-             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
+
+      {/* FAB: The Eternal Addition */}
+      <motion.button 
+        initial={{ scale: 0, rotate: -90 }}
+        animate={{ scale: 1, rotate: 0 }}
+        whileHover={{ scale: 1.1, rotate: 90 }}
+        className="fixed bottom-12 right-12 size-24 bg-primary text-white rounded-none border-4 border-border shadow-[12px_12px_0px_0px_#1A1A1A] dark:shadow-[12px_12px_0px_0px_#000] flex items-center justify-center hover:shadow-none active:scale-95 transition-all z-50 group"
+      >
+        <Plus className="size-10" />
+        <span className="absolute right-32 bg-card text-foreground px-8 py-4 font-black text-xs uppercase tracking-[0.4em] opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap pointer-events-none italic border-4 border-border shadow-[8px_8px_0px_0px_#1A1A1A] dark:shadow-[8px_8px_0px_0px_#000]">
+          Create New Legacy
+        </span>
+      </motion.button>
     </div>
   );
-};
+};

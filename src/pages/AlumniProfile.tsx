@@ -1,25 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { IndustrialButton } from "@/components/IndustrialButton";
-import { GlassCard } from "@/components/GlassCard";
-import { StatusBadge } from "@/components/StatusBadge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  User,
-  MapPin,
-  Mail,
-  ExternalLink,
-  Building,
-  GraduationCap,
-  ArrowLeft,
-  ChevronRight,
-  ShieldCheck,
-  Zap,
-  Clock,
-  Briefcase,
-  Globe,
-  Plus
-} from "lucide-react";
+import { useNavigate, useParams, Link } from "react-router-dom";
+import { cn } from "@/lib/utils";
 import { doc, getDoc, collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
@@ -48,7 +29,6 @@ const AlumniProfilePage = () => {
   const datamanagement = async () => {
     setIsLoading(true);
     try {
-      // Fetch current profile
       if (id) {
         const docRef = doc(db, "users", id);
         const docSnap = await getDoc(docRef);
@@ -57,7 +37,6 @@ const AlumniProfilePage = () => {
         }
       }
 
-      // Fetch others for sidebar
       const usersCol = collection(db, "users");
       const userSnapshot = await getDocs(usersCol);
       const userList = userSnapshot.docs.map(doc => ({ _id: doc.id, ...doc.data() })) as Alumni[];
@@ -75,10 +54,12 @@ const AlumniProfilePage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-surface flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-           <Zap className="size-8 text-safety-orange animate-pulse" />
-           <p className="text-[10px] font-mono uppercase tracking-[0.4em] text-muted-foreground">Synchronizing Unit Node...</p>
+           <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center animate-pulse">
+              <span className="material-symbols-outlined text-primary text-3xl">refresh</span>
+           </div>
+           <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40">Synchronizing Identity...</p>
         </div>
       </div>
     );
@@ -86,175 +67,182 @@ const AlumniProfilePage = () => {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-background p-8 flex items-center justify-center">
-         <GlassCard className="max-w-md text-center p-12">
-            <h2 className="text-2xl font-display font-black uppercase mb-4">Node Not Found</h2>
-            <p className="text-xs font-mono text-muted-foreground uppercase mb-8">The requested unit ID does not exist in the current institutional cluster.</p>
-            <IndustrialButton variant="safety" onClick={() => navigate("/directory")}>Return to directory</IndustrialButton>
-         </GlassCard>
+      <div className="min-h-screen bg-surface flex items-center justify-center p-6">
+         <div className="bg-surface-container-lowest p-12 rounded-[2.5rem] border border-[#c7c4d8]/10 shadow-xl text-center max-w-md space-y-6">
+            <div className="w-20 h-20 bg-error/5 rounded-[2rem] flex items-center justify-center mx-auto">
+               <span className="material-symbols-outlined text-error text-4xl">person_off</span>
+            </div>
+            <h2 className="text-2xl font-black text-on-surface">Profile Not Found</h2>
+            <p className="text-sm font-medium text-on-surface-variant opacity-70">The requested alumni profile could not be located in our current network registry.</p>
+            <button 
+              onClick={() => navigate("/directory")}
+              className="w-full py-4 bg-primary-container text-white rounded-2xl font-black shadow-lg shadow-primary-container/20 hover:scale-[1.02] active:scale-98 transition-all"
+            >
+              Return to Directory
+            </button>
+         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background mt-16 pb-20">
-      {/* Header / Cover Area */}
-      <div className="h-48 md:h-64 bg-foreground/[0.03] border-b border-foreground/10 relative overflow-hidden">
-         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,hsl(var(--safety-orange)/0.03),transparent)]" />
-         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]" />
-         <div className="max-w-7xl mx-auto h-full relative">
+    <div className="min-h-screen bg-surface -mt-2">
+      {/* Cover Header */}
+      <div className="h-48 md:h-80 bg-surface-container-low relative overflow-hidden border-b border-[#c7c4d8]/10">
+         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+         <div className="absolute inset-0 bg-gradient-to-t from-surface to-transparent"></div>
+         <div className="max-w-7xl mx-auto h-full relative px-6 md:px-10 py-10">
             <button 
               onClick={() => navigate("/directory")}
-              className="absolute top-6 left-6 md:left-8 px-4 py-2 bg-background border border-foreground/10 text-[10px] font-mono uppercase tracking-widest hover:bg-foreground hover:text-background transition-all flex items-center gap-2"
+              className="px-6 py-2.5 bg-white/80 backdrop-blur-md rounded-2xl text-[10px] font-black uppercase tracking-widest text-on-surface-variant hover:bg-white hover:text-primary transition-all flex items-center gap-2 shadow-sm"
             >
-              <ArrowLeft className="size-3" />
-              Directory_Back
+              <span className="material-symbols-outlined text-sm">arrow_back</span>
+              Back to Network
             </button>
          </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-6 lg:px-8 -mt-24 relative z-10">
-        <div className="grid lg:grid-cols-12 gap-8">
-          {/* Hero Profile Info */}
-          <div className="lg:col-span-8 space-y-8">
-             <div className="flex flex-col md:flex-row gap-8 items-end md:items-center">
-                <Avatar className="size-40 md:size-48 rounded-none border-4 border-background shadow-2xl grayscale hover:grayscale-0 transition-all">
-                  <AvatarFallback className="bg-foreground/5 text-4xl font-display font-black uppercase">
-                    {profile.name?.slice(0, 2)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 space-y-3 pb-2">
-                   <div className="flex items-center gap-4 flex-wrap">
-                      <h1 className="text-4xl md:text-5xl font-display font-black tracking-tighter uppercase leading-none">
-                        {profile.name}
-                      </h1>
-                      <StatusBadge status="verified" label="V_CERTIFIED_UNIT" />
+      <main className="max-w-7xl mx-auto px-6 md:px-10 -mt-24 relative z-10 pb-20">
+        <div className="grid lg:grid-cols-12 gap-10">
+          {/* Profile Content */}
+          <div className="lg:col-span-8 space-y-10">
+             <div className="flex flex-col md:flex-row gap-8 items-center md:items-end">
+                <div className="relative group">
+                  <div className="w-40 h-40 md:w-56 md:h-56 rounded-[3rem] overflow-hidden shadow-2xl ring-8 ring-white bg-surface-container flex items-center justify-center text-5xl font-black text-on-surface-variant">
+                    {profile.name?.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-emerald-500 rounded-2xl border-4 border-white flex items-center justify-center text-white shadow-lg">
+                    <span className="material-symbols-outlined text-lg font-bold">verified</span>
+                  </div>
+                </div>
+                <div className="flex-1 text-center md:text-left space-y-3 pb-2">
+                   <h1 className="text-4xl md:text-6xl font-black text-on-surface tracking-tighter leading-none">
+                      {profile.name}
+                   </h1>
+                   <div className="flex flex-wrap justify-center md:justify-start gap-3 items-center">
+                      <p className="text-xl font-bold text-primary-container">
+                        {profile.occupation}
+                      </p>
+                      <span className="text-on-surface-variant opacity-40 font-black">@</span>
+                      <p className="text-xl font-bold text-on-surface opacity-80">
+                        {profile.company || "Independent"}
+                      </p>
                    </div>
-                   <p className="text-xl font-mono text-muted-foreground uppercase">
-                      {profile.occupation} @ <span className="text-foreground font-bold">{profile.company}</span>
-                   </p>
                 </div>
              </div>
 
-             {/* Action Bar */}
-             <GlassCard className="p-1 border-foreground/5 bg-foreground/[0.02]">
-                <div className="flex flex-wrap items-center justify-between p-4 gap-4">
-                  <div className="flex gap-4">
-                     <div>
-                        <p className="text-[10px] font-mono text-muted-foreground uppercase">Active Cluster</p>
-                        <p className="text-xs font-mono font-bold uppercase">{profile.branch || 'GENERAL'}</p>
-                     </div>
-                     <div className="w-px h-8 bg-foreground/10" />
-                     <div>
-                        <p className="text-[10px] font-mono text-muted-foreground uppercase">Temporal Node</p>
-                        <p className="text-xs font-mono font-bold uppercase">Batch_{profile.graduationYear}</p>
-                     </div>
-                  </div>
-                  <div className="flex gap-2">
-                     <IndustrialButton variant="outline" size="sm">Message</IndustrialButton>
-                     <IndustrialButton variant="safety" size="sm" className="px-6">Request Mentorship</IndustrialButton>
-                  </div>
+             {/* Action Center */}
+             <div className="bg-surface-container-lowest rounded-[2.5rem] p-8 border border-[#c7c4d8]/10 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex gap-8">
+                   <div className="space-y-1">
+                      <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">Graduation</p>
+                      <p className="text-base font-black text-on-surface underline decoration-primary decoration-4 underline-offset-4">Class of {profile.graduationYear || '2024'}</p>
+                   </div>
+                   <div className="w-px h-10 bg-[#c7c4d8]/20 hidden md:block" />
+                   <div className="space-y-1">
+                      <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">Branch</p>
+                      <p className="text-base font-black text-on-surface italic">{profile.branch || 'General'}</p>
+                   </div>
                 </div>
-             </GlassCard>
+                <div className="flex gap-3 w-full md:w-auto">
+                   <button className="flex-1 md:flex-none px-8 py-3.5 bg-surface-container rounded-2xl font-black text-sm text-on-surface-variant hover:bg-surface-container-high transition-all flex items-center justify-center gap-2">
+                      <span className="material-symbols-outlined">chat</span>
+                      Message
+                   </button>
+                   <button className="flex-1 md:flex-none px-8 py-3.5 bg-primary-container text-white rounded-2xl font-black text-sm shadow-lg shadow-primary-container/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
+                      <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>school</span>
+                      Mentorship
+                   </button>
+                </div>
+             </div>
 
-             {/* Content Tabs / Info */}
-             <div className="grid md:grid-cols-2 gap-8">
-                {/* About Section */}
+             {/* Bio and Timeline */}
+             <div className="grid md:grid-cols-2 gap-10">
                 <div className="space-y-4">
-                   <h3 className="text-[11px] font-mono uppercase tracking-[0.3em] flex items-center gap-2">
-                      <User className="size-3 text-safety-orange" />
-                      Unit_Profile
+                   <h3 className="text-sm font-black text-on-surface uppercase tracking-widest flex items-center gap-3">
+                      <span className="material-symbols-outlined text-primary-container">description</span>
+                      Alumni Bio
                    </h3>
-                   <div className="p-6 border border-foreground/5 bg-foreground/[0.01]">
-                      <p className="text-sm leading-relaxed text-muted-foreground font-light italic">
-                         "{profile.bio || 'Initial profile synchronization pending. No bio data transmitted for this unit.'}"
+                   <div className="bg-surface-container-lowest p-8 rounded-[2rem] border border-[#c7c4d8]/10 shadow-sm">
+                      <p className="text-sm leading-relaxed text-on-surface-variant font-medium opacity-80 italic">
+                         "{profile.bio || "This alumni hasn't added a bio yet. Look at their professional profile for more details."}"
                       </p>
                    </div>
                 </div>
 
-                {/* Professional Timeline */}
                 <div className="space-y-4">
-                   <h3 className="text-[11px] font-mono uppercase tracking-[0.3em] flex items-center gap-2">
-                      <Clock className="size-3 text-electric-blue" />
-                      Protocol_Timeline
+                   <h3 className="text-sm font-black text-on-surface uppercase tracking-widest flex items-center gap-3">
+                      <span className="material-symbols-outlined text-primary-container">history</span>
+                      Timeline
                    </h3>
-                   <div className="relative pl-6 space-y-8 before:absolute before:left-0 before:top-2 before:bottom-2 before:w-px before:bg-foreground/10">
-                      <div className="relative">
-                         <div className="absolute -left-[27px] size-3 bg-electric-blue border-2 border-background" />
-                         <p className="text-[10px] font-mono text-electric-blue uppercase mb-1">Current</p>
-                         <h4 className="text-sm font-display font-bold uppercase">{profile.occupation}</h4>
-                         <p className="text-[10px] font-mono text-muted-foreground uppercase">{profile.company}</p>
+                   <div className="space-y-6 pl-4 border-l-4 border-primary/10 py-2">
+                      <div className="relative pl-6">
+                         <div className="absolute -left-[14px] top-1 w-3 h-3 bg-primary rounded-full ring-4 ring-white shadow-sm"></div>
+                         <p className="text-[10px] font-black text-primary-container uppercase tracking-tighter">Current Role</p>
+                         <h4 className="text-sm font-black text-on-surface">{profile.occupation}</h4>
+                         <p className="text-xs font-bold text-on-surface-variant opacity-60 uppercase">{profile.company}</p>
                       </div>
-                      <div className="relative opacity-50">
-                         <div className="absolute -left-[27px] size-3 bg-foreground/20 border-2 border-background" />
-                         <p className="text-[10px] font-mono text-muted-foreground uppercase mb-1">Batch_{profile.graduationYear}</p>
-                         <h4 className="text-sm font-display font-bold uppercase">Institutional Member</h4>
-                         <p className="text-[10px] font-mono text-muted-foreground uppercase">IIT Delhi</p>
+                      <div className="relative pl-6">
+                         <div className="absolute -left-[14px] top-1 w-3 h-3 bg-surface-container-high rounded-full ring-4 ring-white shadow-sm"></div>
+                         <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-tighter">Graduation</p>
+                         <h4 className="text-sm font-black text-on-surface">Institutional Member</h4>
+                         <p className="text-xs font-bold text-on-surface-variant opacity-60 uppercase">Class of {profile.graduationYear}</p>
                       </div>
                    </div>
                 </div>
              </div>
           </div>
 
-          {/* Sidebar: Details & Peer Nodes */}
-          <div className="lg:col-span-4 space-y-8">
-             {/* Systematic Connect */}
-             <div className="space-y-4">
-               <h3 className="text-[11px] font-mono uppercase tracking-[0.3em]">Synapse_Relays</h3>
-               <GlassCard className="p-0 border-foreground/5">
-                  <div className="divide-y divide-foreground/5 font-mono">
-                     <div className="p-4 flex items-center justify-between group cursor-pointer hover:bg-foreground/[0.02]">
-                        <div className="flex items-center gap-3">
-                           <Mail className="size-3.5 text-muted-foreground" />
-                           <span className="text-[10px] uppercase truncate max-w-[150px]">{profile.email}</span>
-                        </div>
-                        <ExternalLink className="size-3 opacity-0 group-hover:opacity-100" />
-                     </div>
-                     <div className="p-4 flex items-center justify-between group cursor-pointer hover:bg-foreground/[0.02]">
-                        <div className="flex items-center gap-3">
-                           <Globe className="size-3.5 text-muted-foreground" />
-                           <span className="text-[10px] uppercase">Node Website</span>
-                        </div>
-                        <ExternalLink className="size-3 opacity-0 group-hover:opacity-100" />
-                     </div>
-                  </div>
-               </GlassCard>
-             </div>
-
-             {/* Peer Nodes */}
-             <div className="space-y-4">
-                <h3 className="text-[11px] font-mono uppercase tracking-[0.3em]">Similar_Nodes</h3>
-                <div className="space-y-3">
-                   {mockAlumni.map((alumni) => (
-                      <div 
-                        key={alumni._id} 
-                        className="p-4 border border-foreground/5 bg-foreground/[0.01] flex items-center gap-4 group cursor-pointer hover:border-foreground/20 transition-all"
-                        onClick={() => navigate(`/alumni/${alumni._id}`)}
-                      >
-                         <Avatar className="size-10 rounded-none border border-foreground/10 grayscale group-hover:grayscale-0">
-                           <AvatarFallback className="text-[10px] font-mono font-bold">{alumni.name?.slice(0, 2)}</AvatarFallback>
-                         </Avatar>
-                         <div className="flex-1 min-w-0">
-                            <p className="text-[11px] font-display font-bold uppercase truncate">{alumni.name}</p>
-                            <p className="text-[9px] font-mono text-muted-foreground uppercase truncate">{alumni.occupation}</p>
-                         </div>
-                         <ChevronRight className="size-3 text-muted-foreground group-hover:text-safety-orange transition-all" />
+          {/* Sidebar */}
+          <div className="lg:col-span-4 space-y-10">
+             {/* Contact Info */}
+             <div className="bg-surface-container-lowest rounded-[2.5rem] p-8 border border-[#c7c4d8]/10 shadow-sm space-y-6">
+                <h3 className="text-sm font-black text-on-surface uppercase tracking-widest">Connect</h3>
+                <div className="space-y-2">
+                   <div className="flex items-center justify-between p-4 bg-surface-container rounded-2xl group cursor-pointer hover:bg-primary/5 transition-all decoration-primary underline-offset-4">
+                      <div className="flex items-center gap-3 overflow-hidden">
+                         <span className="material-symbols-outlined text-on-surface-variant/40 group-hover:text-primary transition-colors">mail</span>
+                         <span className="text-xs font-bold text-on-surface truncate pr-2">{profile.email}</span>
                       </div>
-                   ))}
-                   <IndustrialButton variant="ghost" className="w-full h-10 text-[9px] uppercase font-mono tracking-widest" onClick={() => navigate("/directory")}>
-                      View Cluster Directory
-                   </IndustrialButton>
+                      <span className="material-symbols-outlined text-xs opacity-0 group-hover:opacity-100 transition-all">open_in_new</span>
+                   </div>
+                   <div className="flex items-center justify-between p-4 bg-surface-container rounded-2xl group cursor-pointer hover:bg-primary/5 transition-all">
+                      <div className="flex items-center gap-3">
+                         <span className="material-symbols-outlined text-on-surface-variant/40 group-hover:text-primary transition-colors">language</span>
+                         <span className="text-xs font-bold text-on-surface">Digital Portfolio</span>
+                      </div>
+                      <span className="material-symbols-outlined text-xs opacity-0 group-hover:opacity-100 transition-all">open_in_new</span>
+                   </div>
                 </div>
              </div>
 
-             {/* Support Local Node */}
-             <GlassCard className="p-6 border-safety-orange/20 bg-safety-orange/[0.02]">
-                <h4 className="text-xs font-display font-black uppercase mb-2">Institutional Support</h4>
-                <p className="text-[10px] font-mono text-muted-foreground leading-relaxed uppercase mb-4">
-                  Establish a verified link with this alumni to receive career protocol blueprints.
-                </p>
-                <IndustrialButton variant="safety" className="w-full h-10">Request Endorsement</IndustrialButton>
-             </GlassCard>
+             {/* Similar Nodes */}
+             <div className="space-y-6">
+                <h3 className="text-sm font-black text-on-surface uppercase tracking-widest">Discover Network</h3>
+                <div className="space-y-4">
+                   {mockAlumni.map((alumni) => (
+                      <div 
+                        key={alumni._id} 
+                        onClick={() => navigate(`/alumni/${alumni._id}`)}
+                        className="bg-surface-container-lowest p-5 rounded-[1.5rem] border border-[#c7c4d8]/10 flex items-center gap-4 group cursor-pointer hover:shadow-lg transition-all"
+                      >
+                         <div className="w-12 h-12 bg-surface-container-low rounded-xl flex items-center justify-center text-xs font-black text-on-surface-variant shadow-inner">
+                           {alumni.name?.slice(0, 2).toUpperCase()}
+                         </div>
+                         <div className="flex-1 min-w-0">
+                            <p className="text-sm font-black text-on-surface truncate group-hover:text-primary transition-colors">{alumni.name}</p>
+                            <p className="text-[10px] font-bold text-on-surface-variant opacity-60 uppercase truncate">{alumni.occupation}</p>
+                         </div>
+                         <span className="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">arrow_right_alt</span>
+                      </div>
+                   ))}
+                   <Link to="/directory" className="block">
+                      <button className="w-full py-3.5 bg-surface-container-low text-primary text-xs font-black uppercase tracking-widest rounded-2xl hover:bg-primary hover:text-white transition-all">
+                        Full Network Directory
+                      </button>
+                   </Link>
+                </div>
+             </div>
           </div>
         </div>
       </main>

@@ -1,23 +1,29 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 import { 
+  LayoutDashboard, 
   Users, 
-  MessageCircle, 
-  UserCheck, 
   GraduationCap, 
+  Network, 
+  MessageSquare, 
+  Sparkles,
   User,
-  Home,
-  Bot,
-  Info,
-  Layers,
-  Settings
+  Settings,
+  Flower
 } from "lucide-react";
+import { ThemeToggle } from "./ThemeToggle";
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: Home },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Directory", href: "/directory", icon: Users },
-  { name: "Messages", href: "/messages", icon: MessageCircle },
-  { name: "AI Chat", href: "/ai-chat", icon: Bot },
+  { name: "Mentors", href: "/mentorship", icon: GraduationCap },
+  { name: "Connections", href: "/connections", icon: Network },
+  { name: "Messages", href: "/messages", icon: MessageSquare },
+  { name: "AI Advisor", href: "/ai-chat", icon: Sparkles },
+];
+
+const footerNavigation = [
   { name: "Profile", href: "/profile", icon: User },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
@@ -25,56 +31,80 @@ const navigation = [
 export const Sidebar = () => {
   const location = useLocation();
 
-  // Don't show sidebar on auth pages or landing page if not needed
-  if (location.pathname.startsWith('/auth') || location.pathname === '/') {
+  if (location.pathname === '/' || location.pathname.startsWith('/auth')) {
     return null;
   }
 
   return (
-    <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col lg:pt-16">
-      <div className="flex flex-col flex-grow bg-background border-r border-foreground/10 overflow-y-auto">
-        <div className="px-6 py-4 border-b border-foreground/5">
-          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
-            Navigation System
-          </p>
+    <aside className="h-screen w-64 fixed left-0 top-0 overflow-y-auto bg-foreground text-[#F7F3E9] flex flex-col p-6 gap-4 z-50 border-r-2 border-border relative">
+      <div className="absolute inset-0 washi-texture opacity-5 pointer-events-none" />
+      
+      <div className="flex items-center gap-4 mb-10 relative z-10">
+        <div className="size-10 border-2 border-[#F7F3E9] bg-primary flex items-center justify-center rotate-45 shadow-[4px_4px_0px_0px_rgba(255,183,197,0.3)]">
+          <Flower className="size-6 text-white -rotate-45" />
         </div>
-        <nav className="flex-1 px-3 py-6 space-y-1">
-          {navigation.map((item) => {
-            const isActive = location.pathname === item.href;
-            return (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={cn(
-                  "group flex items-center px-4 py-3 text-[11px] font-mono uppercase tracking-wider transition-all border",
-                  isActive
-                    ? "bg-foreground text-background border-foreground"
-                    : "text-muted-foreground border-transparent hover:text-foreground hover:border-foreground/20 hover:bg-foreground/5"
-                )}
-              >
-                <item.icon className={cn(
-                  "mr-4 h-4 w-4 flex-shrink-0 transition-transform group-hover:scale-110",
-                  isActive ? "text-background" : "text-muted-foreground"
-                )} />
-                {item.name}
-              </Link>
-            );
-          })}
-        </nav>
-        
-        {/* Institutional Identifier Pin */}
-        <div className="p-4 mt-auto border-t border-foreground/10 bg-foreground/[0.02]">
-          <div className="flex items-center gap-3">
-            <div className="size-8 bg-safety-orange flex items-center justify-center text-white font-bold text-xs">
-              IIT
-            </div>
-            <div>
-              <p className="text-[10px] font-mono uppercase leading-none text-foreground">Institute Unit</p>
-              <p className="text-[9px] font-mono text-muted-foreground">ID: #SYS_7721</p>
-            </div>
-          </div>
+        <div>
+          <h1 className="text-xl font-bold tracking-tighter uppercase font-serif">AlumNet</h1>
+          <p className="text-[10px] uppercase tracking-widest text-secondary font-bold opacity-80">Lineage Network</p>
         </div>
       </div>
-    </div>
+      
+      <nav className="flex-1 flex flex-col gap-2 relative z-10">
+        {navigation.map((item) => {
+          const isActive = location.pathname === item.href;
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.name}
+              to={item.href}
+              className={cn(
+                "flex items-center gap-4 px-4 py-3 transition-all duration-300 relative group",
+                isActive
+                  ? "text-primary font-bold bg-[#F7F3E9]/10"
+                  : "text-[#F7F3E9]/60 hover:text-secondary hover:bg-white/5"
+              )}
+            >
+              {isActive && (
+                <motion.div 
+                  layoutId="active-nav"
+                  className="absolute left-0 w-1 h-full bg-primary"
+                />
+              )}
+              <Icon className={cn("size-5 transition-transform group-hover:scale-110", isActive ? "text-primary" : "text-inherit")} />
+              <span className="text-sm uppercase tracking-widest font-bold">{item.name}</span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="mt-auto flex flex-col gap-2 pt-6 border-t border-[#F7F3E9]/10 relative z-10">
+        {footerNavigation.map((item) => {
+          const isActive = location.pathname === item.href;
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.name}
+              to={item.href}
+              className={cn(
+                "flex items-center gap-4 px-4 py-3 transition-all duration-300 relative group",
+                isActive
+                  ? "text-primary font-bold bg-[#F7F3E9]/10"
+                  : "text-[#F7F3E9]/60 hover:text-secondary hover:bg-white/5"
+              )}
+            >
+              <Icon className={cn("size-5", isActive ? "text-primary" : "text-inherit")} />
+              <span className="text-sm uppercase tracking-widest font-bold">{item.name}</span>
+            </Link>
+          );
+        })}
+        <div className="px-4 py-3 mt-4">
+          <ThemeToggle />
+        </div>
+      </div>
+
+      <div className="absolute right-4 bottom-12 writing-vertical text-[10px] font-bold text-[#F7F3E9]/20 uppercase tracking-[0.5em] pointer-events-none italic">
+        令和六年 • 結び
+      </div>
+    </aside>
   );
 };

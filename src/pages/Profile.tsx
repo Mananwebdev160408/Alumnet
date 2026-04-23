@@ -1,31 +1,10 @@
 import { useState, useEffect } from "react";
-import { IndustrialButton } from "@/components/IndustrialButton";
-import { GlassCard } from "@/components/GlassCard";
-import { StatusBadge } from "@/components/StatusBadge";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
-import {
-  Edit,
-  MapPin,
-  Briefcase,
-  GraduationCap,
-  Mail,
-  Save,
-  X,
-  User,
-  Loader2,
-  ShieldCheck,
-  Zap,
-  Globe,
-  Settings,
-  Database
-} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-const graduationYears = Array.from({ length: 50 }, (_, i) => 2024 - i);
+import { cn } from "@/lib/utils";
 
 export const Profile = () => {
   const { toast } = useToast();
@@ -86,7 +65,7 @@ export const Profile = () => {
       console.error('Sync Failure:', error);
       toast({
         variant: "destructive",
-        title: "Link Error",
+        title: "Connection Error",
         description: "Failed to synchronize profile data.",
       });
     } finally {
@@ -115,8 +94,8 @@ export const Profile = () => {
       await updateDoc(docRef, updateData);
 
       toast({
-        title: "Protocol Update Successful",
-        description: "Your operational profile has been updated.",
+        title: "Profile Updated",
+        description: "Your changes have been saved successfully.",
       });
       setIsEditing(false);
     } catch (error) {
@@ -124,196 +103,214 @@ export const Profile = () => {
       toast({
         variant: "destructive",
         title: "Update Failed",
-        description: "Protocol update aborted due to connection error.",
+        description: "Unable to save profile changes.",
       });
     } finally {
       setSaving(false);
     }
   };
 
-  const handleChange = (field, value) => {
+  const handleChange = (field: string, value: string) => {
     setProfileData((prev) => ({ ...prev, [field]: value }));
   };
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-[80vh] gap-4">
-        <Zap className="size-8 text-safety-orange animate-pulse" />
-        <p className="text-[10px] font-mono uppercase tracking-[0.4em] text-muted-foreground">Syncing Identity Node...</p>
+      <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
+        <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center animate-pulse">
+          <span className="material-symbols-outlined text-primary text-3xl">refresh</span>
+        </div>
+        <p className="text-xs font-bold text-on-surface-variant/40 uppercase tracking-widest">Synchronizing Identity...</p>
       </div>
     );
   }
 
   return (
-    <div className="p-4 lg:p-8 space-y-8 mt-16 max-w-[1200px] mx-auto">
-      {/* Header / Identity Area */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 border-b border-foreground/10 pb-12">
-        <div className="flex flex-col md:flex-row gap-8 items-center">
+    <div className="space-y-10">
+      {/* Hero Header Section */}
+      <section className="bg-surface-container-lowest rounded-[2.5rem] p-10 border border-[#c7c4d8]/10 shadow-sm relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+        <div className="flex flex-col md:flex-row items-center md:items-end gap-10 relative">
           <div className="relative group">
-            <Avatar className="size-32 md:size-40 rounded-none border-2 border-foreground/5 shadow-2xl transition-all grayscale group-hover:grayscale-0">
-               <AvatarFallback className="bg-foreground/5 text-4xl font-display font-black">
-                 {profileData.name?.slice(0,2)}
-               </AvatarFallback>
-            </Avatar>
-            <button className="absolute -bottom-2 -right-2 p-2 bg-safety-orange text-black industrial-border opacity-0 group-hover:opacity-100 transition-opacity">
-               <Edit className="size-4" />
+            <div className="w-32 h-32 md:w-44 md:h-44 rounded-[2.5rem] overflow-hidden shadow-2xl ring-8 ring-white">
+              <div className="w-full h-full bg-surface-container flex items-center justify-center text-4xl font-black text-on-surface-variant">
+                {profileData.name?.slice(0, 2).toUpperCase()}
+              </div>
+            </div>
+            <button className="absolute -bottom-2 -right-2 w-12 h-12 bg-primary-container text-white rounded-2xl shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
+               <span className="material-symbols-outlined">photo_camera</span>
             </button>
           </div>
-          <div className="text-center md:text-left">
-            <div className="flex items-center gap-3 justify-center md:justify-start mb-2">
-               <ShieldCheck className="size-4 text-safety-orange" />
-               <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground">Active_Asset Status</p>
+          <div className="flex-1 text-center md:text-left space-y-4">
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full text-[10px] font-black uppercase text-primary tracking-widest">
+                Verified Member
+              </div>
+              <h1 className="text-4xl md:text-6xl font-black text-on-surface tracking-tighter leading-none">
+                {profileData.name || "Alumni Member"}
+              </h1>
             </div>
-            <h1 className="text-4xl md:text-6xl font-display font-black tracking-tighter uppercase leading-none">
-               {profileData.name || "UNNAMED_NODE"}
-            </h1>
-            <p className="text-muted-foreground font-mono text-xs uppercase tracking-widest mt-4">
-               ID: {currentUser?.uid.slice(0, 12)}... // ROLE: {profileData.role || "MEMBER"}
-            </p>
+            <div className="flex flex-wrap justify-center md:justify-start gap-6 pt-2">
+               <div className="flex items-center gap-2 text-on-surface-variant font-bold text-sm opacity-60">
+                 <span className="material-symbols-outlined text-lg">school</span>
+                 {profileData.college || "University"}
+               </div>
+               <div className="flex items-center gap-2 text-on-surface-variant font-bold text-sm opacity-60">
+                 <span className="material-symbols-outlined text-lg">location_on</span>
+                 {profileData.location || "Earth"}
+               </div>
+            </div>
+          </div>
+          <div className="flex gap-3">
+             <button 
+               onClick={isEditing ? () => setIsEditing(false) : () => setIsEditing(true)}
+               className={cn(
+                 "flex items-center gap-2 px-8 py-3 rounded-2xl font-black text-sm shadow-md transition-all active:scale-95",
+                 isEditing ? "bg-surface-container text-on-surface-variant" : "bg-primary-container text-white shadow-primary-container/20"
+               )}
+             >
+               <span className="material-symbols-outlined">{isEditing ? "close" : "edit"}</span>
+               {isEditing ? "Cancel" : "Edit Profile"}
+             </button>
           </div>
         </div>
-        
-        <IndustrialButton 
-          variant={isEditing ? "outline" : "safety"} 
-          onClick={isEditing ? () => setIsEditing(false) : () => setIsEditing(true)}
-          className="h-12 px-8"
-        >
-          {isEditing ? <><X className="mr-2 size-4" /> Abort</> : <><Edit className="mr-2 size-4" /> Edit Profile</>}
-        </IndustrialButton>
-      </div>
+      </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Main Form Area */}
-        <div className="lg:col-span-8 space-y-8">
-          <GlassCard className="p-6 md:p-10 border-foreground/5">
-             <div className="flex items-center gap-3 mb-8">
-                <Database className="size-4 text-safety-orange" />
-                <h3 className="text-sm font-display font-bold uppercase tracking-widest">Protocol Attributes</h3>
-             </div>
-             
-             <div className="space-y-8">
-                <div className="grid md:grid-cols-2 gap-6">
-                   <div className="space-y-2">
-                      <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Full Designation</label>
-                      <Input 
-                        disabled={!isEditing}
-                        value={profileData.name}
-                        onChange={(e) => handleChange("name", e.target.value)}
-                        className="h-12 rounded-none bg-foreground/[0.02] border-foreground/10 font-mono text-sm placeholder:text-muted-foreground focus-visible:ring-safety-orange"
-                      />
-                   </div>
-                   <div className="space-y-2">
-                      <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Sector / Branch</label>
-                      <Input 
-                        disabled={!isEditing}
-                        value={profileData.branch}
-                        onChange={(e) => handleChange("branch", e.target.value)}
-                        className="h-12 rounded-none bg-foreground/[0.02] border-foreground/10 font-mono text-sm focus-visible:ring-safety-orange"
-                      />
-                   </div>
-                </div>
+      <div className="grid lg:grid-cols-12 gap-10">
+        {/* Main Content Area */}
+        <div className="lg:col-span-8 space-y-10">
+          <div className="bg-surface-container-lowest rounded-[2.5rem] p-10 border border-[#c7c4d8]/10 shadow-sm space-y-8">
+            <div className="flex items-center gap-3 border-b border-[#c7c4d8]/10 pb-4">
+               <span className="material-symbols-outlined text-primary-container">person</span>
+               <h3 className="text-lg font-black text-on-surface uppercase tracking-tight">Professional Profile</h3>
+            </div>
+            
+            <div className="grid md:grid-cols-2 gap-8">
+               <div className="space-y-2">
+                 <label className="text-[10px] font-black uppercase text-on-surface-variant/40 ml-1 tracking-widest">Full Name</label>
+                 <input 
+                   disabled={!isEditing}
+                   value={profileData.name}
+                   onChange={(e) => handleChange("name", e.target.value)}
+                   className="w-full bg-surface-container-low border-none rounded-2xl py-3 px-5 text-sm font-medium focus:ring-4 focus:ring-primary/10 transition-all disabled:opacity-60" 
+                 />
+               </div>
+               <div className="space-y-2">
+                 <label className="text-[10px] font-black uppercase text-on-surface-variant/40 ml-1 tracking-widest">Department / Branch</label>
+                 <input 
+                   disabled={!isEditing}
+                   value={profileData.branch}
+                   onChange={(e) => handleChange("branch", e.target.value)}
+                   className="w-full bg-surface-container-low border-none rounded-2xl py-3 px-5 text-sm font-medium focus:ring-4 focus:ring-primary/10 transition-all disabled:opacity-60" 
+                 />
+               </div>
+               <div className="space-y-2">
+                 <label className="text-[10px] font-black uppercase text-on-surface-variant/40 ml-1 tracking-widest">Current Role</label>
+                 <input 
+                   disabled={!isEditing}
+                   value={profileData.occupation}
+                   onChange={(e) => handleChange("occupation", e.target.value)}
+                   className="w-full bg-surface-container-low border-none rounded-2xl py-3 px-5 text-sm font-medium focus:ring-4 focus:ring-primary/10 transition-all disabled:opacity-60" 
+                 />
+               </div>
+               <div className="space-y-2">
+                 <label className="text-[10px] font-black uppercase text-on-surface-variant/40 ml-1 tracking-widest">Company / University</label>
+                 <input 
+                   disabled={!isEditing}
+                   value={profileData.company}
+                   onChange={(e) => handleChange("company", e.target.value)}
+                   className="w-full bg-surface-container-low border-none rounded-2xl py-3 px-5 text-sm font-medium focus:ring-4 focus:ring-primary/10 transition-all disabled:opacity-60" 
+                 />
+               </div>
+            </div>
 
-                <div className="grid md:grid-cols-2 gap-6">
-                   <div className="space-y-2">
-                      <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Operational Role</label>
-                      <Input 
-                        disabled={!isEditing}
-                        value={profileData.occupation}
-                        onChange={(e) => handleChange("occupation", e.target.value)}
-                        className="h-12 rounded-none bg-foreground/[0.02] border-foreground/10 font-mono text-sm focus-visible:ring-safety-orange"
-                      />
-                   </div>
-                   <div className="space-y-2">
-                      <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Primary Collective (Company)</label>
-                      <Input 
-                        disabled={!isEditing}
-                        value={profileData.company}
-                        onChange={(e) => handleChange("company", e.target.value)}
-                        className="h-12 rounded-none bg-foreground/[0.02] border-foreground/10 font-mono text-sm focus-visible:ring-safety-orange"
-                      />
-                   </div>
-                </div>
+            <div className="space-y-2">
+               <label className="text-[10px] font-black uppercase text-on-surface-variant/40 ml-1 tracking-widest">About You</label>
+               <textarea 
+                 disabled={!isEditing}
+                 value={profileData.description}
+                 onChange={(e) => handleChange("description", e.target.value)}
+                 rows={4}
+                 className="w-full bg-surface-container-low border-none rounded-2xl p-5 text-sm font-medium focus:ring-4 focus:ring-primary/10 transition-all resize-none disabled:opacity-60 no-scrollbar" 
+               />
+            </div>
 
-                <div className="space-y-2">
-                   <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Unit_Bio (Description)</label>
-                   <textarea 
-                     disabled={!isEditing}
-                     value={profileData.description}
-                     onChange={(e) => handleChange("description", e.target.value)}
-                     rows={4}
-                     className="w-full p-4 rounded-none bg-foreground/[0.02] border border-foreground/10 font-mono text-sm focus:outline-none focus:ring-1 focus:ring-safety-orange resize-none"
-                   />
-                </div>
-                
-                {isEditing && (
-                  <div className="flex justify-end pt-4">
-                     <IndustrialButton variant="safety" onClick={handleSave} disabled={saving} className="h-12 px-12">
-                        {saving ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Save className="mr-2 size-4" />}
-                        Commit Changes
-                     </IndustrialButton>
-                  </div>
-                )}
-             </div>
-          </GlassCard>
+            {isEditing && (
+              <div className="pt-4">
+                 <button 
+                   onClick={handleSave} 
+                   disabled={saving} 
+                   className="w-full bg-primary-container text-white py-4 rounded-2xl font-black shadow-lg shadow-primary-container/30 hover:scale-[1.02] active:scale-98 transition-all flex items-center justify-center gap-3"
+                 >
+                    {saving ? <span className="material-symbols-outlined animate-spin">refresh</span> : <span className="material-symbols-outlined">save</span>}
+                    Commit Changes
+                 </button>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Sidebar / Secondary Nodes */}
-        <div className="lg:col-span-4 space-y-8">
-           <div className="space-y-4">
-              <h3 className="text-[11px] font-mono uppercase tracking-[0.3em] flex items-center gap-2">
-                 <Globe className="size-3 text-electric-blue" />
-                 Relay Links
-              </h3>
-              <GlassCard className="p-0 border-foreground/5 bg-foreground/[0.01]">
-                 <div className="p-6 space-y-6">
-                    <div className="space-y-2">
-                       <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">Primary Node (Email)</label>
-                       <Input 
-                         disabled
-                         value={profileData.email}
-                         className="h-10 rounded-none bg-foreground/5 border-transparent font-mono text-xs opacity-50"
-                       />
-                    </div>
-                    <div className="space-y-2">
-                       <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">Synapse Link (LinkedIn)</label>
-                       <Input 
-                         disabled={!isEditing}
-                         value={profileData.linkedin}
-                         onChange={(e) => handleChange("linkedin", e.target.value)}
-                         placeholder="linkedin.com/in/..."
-                         className="h-10 rounded-none bg-foreground/[0.02] border-foreground/10 font-mono text-xs focus-visible:ring-electric-blue"
-                       />
-                    </div>
-                    <div className="space-y-2">
-                       <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">External Terminal (Website)</label>
-                       <Input 
-                         disabled={!isEditing}
-                         value={profileData.personalwebsite}
-                         onChange={(e) => handleChange("personalwebsite", e.target.value)}
-                         placeholder="https://..."
-                         className="h-10 rounded-none bg-foreground/[0.02] border-foreground/10 font-mono text-xs focus-visible:ring-electric-blue"
-                       />
-                    </div>
+        {/* Sidebar Controls Area */}
+        <div className="lg:col-span-4 space-y-10">
+          <div className="bg-surface-container-lowest rounded-[2.5rem] p-10 border border-[#c7c4d8]/10 shadow-sm space-y-8">
+            <div className="flex items-center gap-3 border-b border-[#c7c4d8]/10 pb-4">
+               <span className="material-symbols-outlined text-primary-container">link</span>
+               <h3 className="text-lg font-black text-on-surface uppercase tracking-tight">Social Connect</h3>
+            </div>
+            
+            <div className="space-y-6">
+               <div className="space-y-2">
+                 <label className="text-[10px] font-black uppercase text-on-surface-variant/40 ml-1 tracking-widest">Official Email</label>
+                 <div className="w-full bg-surface-container-low border-none rounded-2xl py-3 px-5 text-sm font-medium opacity-50 flex items-center gap-3">
+                   <span className="material-symbols-outlined text-sm">mail</span>
+                   {profileData.email}
                  </div>
-              </GlassCard>
-           </div>
+               </div>
+               <div className="space-y-2">
+                 <label className="text-[10px] font-black uppercase text-on-surface-variant/40 ml-1 tracking-widest">LinkedIn Profile</label>
+                 <div className="relative group">
+                    <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary/50 text-lg">link</span>
+                    <input 
+                      disabled={!isEditing}
+                      value={profileData.linkedin}
+                      onChange={(e) => handleChange("linkedin", e.target.value)}
+                      placeholder="linkedin.com/in/..."
+                      className="w-full bg-surface-container-low border-none rounded-2xl py-3 pl-12 pr-5 text-sm font-medium focus:ring-4 focus:ring-primary/10 transition-all disabled:opacity-60" 
+                    />
+                 </div>
+               </div>
+               <div className="space-y-2">
+                 <label className="text-[10px] font-black uppercase text-on-surface-variant/40 ml-1 tracking-widest">Portfolio / Site</label>
+                 <div className="relative group">
+                    <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary/50 text-lg">language</span>
+                    <input 
+                      disabled={!isEditing}
+                      value={profileData.personalwebsite}
+                      onChange={(e) => handleChange("personalwebsite", e.target.value)}
+                      placeholder="https://..."
+                      className="w-full bg-surface-container-low border-none rounded-2xl py-3 pl-12 pr-5 text-sm font-medium focus:ring-4 focus:ring-primary/10 transition-all disabled:opacity-60" 
+                    />
+                 </div>
+               </div>
+            </div>
+          </div>
 
-           <div className="p-6 border border-foreground/5 bg-foreground/[0.01] space-y-4">
-              <div className="flex items-center gap-2 mb-2">
-                 <Settings className="size-3 text-muted-foreground" />
-                 <h4 className="text-[10px] font-mono uppercase tracking-widest">Node Settings</h4>
-              </div>
-              <p className="text-[10px] font-mono text-muted-foreground leading-relaxed uppercase">
-                Privacy Protocol: <span className="text-foreground">STRICT</span>
-                <br />
-                Identity Visibility: <span className="text-foreground">INSTITUTION_ONLY</span>
-              </p>
-              <IndustrialButton variant="outline" className="w-full text-[9px] uppercase font-mono tracking-widest h-10 mt-2">
-                 Advanced Configuration
-              </IndustrialButton>
-           </div>
+          <div className="bg-surface-container p-8 rounded-[2.5rem] space-y-6">
+             <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-on-surface-variant/60">lock</span>
+                <h4 className="text-xs font-black uppercase text-on-surface-variant/60 tracking-widest">Privacy Controls</h4>
+             </div>
+             <p className="text-xs font-medium text-on-surface-variant opacity-70 leading-relaxed">
+               Your profile visibility is currently set to <span className="font-black text-primary">Institution Only</span>. Change this in application settings.
+             </p>
+             <Link to="/settings" className="block">
+               <button className="w-full py-3 bg-white rounded-2xl text-xs font-black uppercase tracking-widest text-on-surface-variant hover:text-primary transition-all border border-[#c7c4d8]/10 shadow-sm">
+                 Security Hub
+               </button>
+             </Link>
+          </div>
         </div>
       </div>
     </div>
   );
-};
+};

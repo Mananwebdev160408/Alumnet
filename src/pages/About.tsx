@@ -1,85 +1,56 @@
 import { useState, useEffect } from "react";
-import { IndustrialButton } from "@/components/IndustrialButton";
-import { GlassCard } from "@/components/GlassCard";
-import { StatusBadge } from "@/components/StatusBadge";
-import { 
-  Users, 
-  Target, 
-  Award, 
-  Code, 
-  Palette, 
-  BarChart, 
-  MessageSquare, 
-  Bot,
-  Sparkles,
-  Trophy,
-  Lightbulb,
-  Rocket,
-  Star,
-  Shield,
-  Cpu,
-  Zap,
-  Activity,
-  Layers
-} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const teamMembers = [
   {
-    name: "KINSHUK_KASHYAP",
+    name: "Kinshuk Kashyap",
     role: "Unit Leader",
-    designation: "UX_ARCHITECT",
+    designation: "UX Architect",
     description: "Lead architect for core interface protocols & visual systems. Optimization specialist.",
-    icon: Code,
     delay: "0s"
   },
   {
-    name: "MANAN_GUPTA",
+    name: "Manan Gupta",
     role: "Full Stack Engineer",
-    designation: "CORE_SYSTEMS",
+    designation: "Core Systems",
     description: "Engineering robust infrastructure with MERN stack & Firebase cloud arrays.",
-    icon: Users,
     delay: "0.2s"
   },
   {
-    name: "TANVI_GUPTA", 
+    name: "Tanvi Gupta", 
     role: "Systems Designer",
-    designation: "STRATEGIC_INTEL",
+    designation: "Strategic Intel",
     description: "Conceptualization of problem-solution matrices & strategic presentation architecture.",
-    icon: Palette,
     delay: "0.4s"
   },
   {
-    name: "RISHABH_MISHRA",
+    name: "Rishabh Mishra",
     role: "Data Analyst", 
-    designation: "INTEL_OPERATIONS",
+    designation: "Intel Operations",
     description: "Validation of problem statements through deep-node data research & market analytics.",
-    icon: BarChart,
     delay: "0.6s"
   },
   {
-    name: "PRASHANT_SINGH",
+    name: "Prashant Singh",
     role: "Marketing Strategist",
-    designation: "RELAY_COMMUNICATIONS",
+    designation: "Relay Communications",
     description: "Architecting narrative protocols & value proposition transmissions for global delivery.",
-    icon: MessageSquare,
     delay: "0.8s"
   },
   {
-    name: "SAMEER",
+    name: "Sameer",
     role: "AI Lead",
-    designation: "NEURAL_CORE_DEV",
+    designation: "Neural Core Dev",
     description: "Implementation of autonomous neural chatbot relays & cognitive interaction models.",
-    icon: Bot,
     delay: "1s"
   }
 ];
 
 const achievements = [
-  { icon: Trophy, text: "SIH_2025_DEPLOYED", label: "STATUS: ACTIVE" },
-  { icon: Target, text: "PROB_STMT_25017", label: "SECTOR: EDUCATION" },
-  { icon: Star, text: "SMART_EXP_PROTO", label: "TYPE: SOFTWARE" },
-  { icon: Award, text: "VAL_CATEGORY_01", label: "LEVEL: NATIONAL" }
+  { icon: "workspace_premium", text: "SIH 2025 Deployed", label: "Active Phase" },
+  { icon: "school", text: "Education Sector", label: "Target Domain" },
+  { icon: "verified", text: "Software Solution", label: "Category" },
+  { icon: "military_tech", text: "National Level", label: "Achievement" }
 ];
 
 export const About = () => {
@@ -90,148 +61,154 @@ export const About = () => {
   }, []);
 
   return (
-    <div className="p-4 lg:p-10 space-y-20 mt-16 max-w-[1400px] mx-auto min-h-screen">
-      {/* Hero Section */}
+    <div className="space-y-20 pb-20">
+      {/* Hero Header */}
       <section className={cn(
-        "space-y-12 text-center transition-all duration-1000 transform",
+        "text-center space-y-8 transition-all duration-1000 transform",
         isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
       )}>
-        <div className="space-y-6">
-          <div className="flex items-center justify-center gap-4">
-             <div className="h-px w-12 bg-safety-orange" />
-             <p className="text-[10px] font-mono uppercase tracking-[0.5em] text-safety-orange">Project Dossier // 0x25017</p>
-             <div className="h-px w-12 bg-safety-orange" />
+        <div className="space-y-4">
+          <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-primary/5 rounded-full text-primary text-[10px] font-black tracking-widest uppercase">
+            Project Dossier // 0x25017
           </div>
-          <h1 className="text-6xl md:text-9xl font-display font-black tracking-tighter uppercase leading-none">
-            AlumNet_OS
+          <h1 className="text-6xl md:text-8xl font-black text-on-surface tracking-tighter leading-none">
+            AlumNet Core
           </h1>
-          <p className="text-sm md:text-lg font-mono text-muted-foreground uppercase tracking-widest max-w-2xl mx-auto leading-relaxed">
-            Revolutionizing institutional connectivity through high-fidelity data nodes & autonomous engagement protocols.
+          <p className="text-lg md:text-xl font-medium text-on-surface-variant opacity-70 max-w-3xl mx-auto leading-relaxed">
+            Revolutionizing institutional connectivity through high-fidelity networking and autonomous engagement protocols.
           </p>
         </div>
 
-        {/* Strategic Card */}
-        <GlassCard className="max-w-5xl mx-auto p-12 border-foreground/10 relative overflow-hidden group">
-           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-100 transition-opacity">
-              <Shield className="size-12 text-safety-orange" />
-           </div>
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-left">
+        {/* Strategic Overview Card */}
+        <div className="bg-surface-container-lowest rounded-[3rem] p-12 border border-[#c7c4d8]/10 shadow-xl shadow-primary/5 max-w-6xl mx-auto relative overflow-hidden group">
+           <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-125 transition-transform duration-700"></div>
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-left relative">
               <div className="space-y-6">
                  <div className="flex items-center gap-3">
-                    <StatusBadge status="online" label="OPERATIONAL_PHASE" />
-                    <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">SIH_2025_RELEASE</span>
+                    <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-100">
+                       <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full animate-pulse"></span>
+                       Operational
+                    </div>
+                    <span className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">SIH 2025 Release</span>
                  </div>
-                 <h2 className="text-3xl font-display font-black uppercase tracking-tight">Strategy_Overview</h2>
-                 <p className="font-mono text-xs text-muted-foreground uppercase leading-relaxed tracking-tighter">
-                    Centralized alumni data management platform engineered for the Smart India Hackathon. Focus: Intelligent automation, high-density networking, and institutional legacy preservation.
+                 <h2 className="text-4xl font-black text-on-surface tracking-tight leading-none uppercase">Strategy Overview</h2>
+                 <p className="text-sm font-medium text-on-surface-variant leading-relaxed opacity-80">
+                    Centralized alumni data management platform engineered for the Smart India Hackathon. We focus on intelligent automation, high-density networking, and institutional legacy preservation at scale.
                  </p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                  {achievements.map((item, i) => (
-                    <div key={i} className="p-4 bg-foreground/5 border border-foreground/10 flex flex-col gap-2">
-                       <item.icon className="size-4 text-safety-orange" />
-                       <p className="text-[10px] font-display font-bold uppercase tracking-tight">{item.text}</p>
-                       <p className="text-[8px] font-mono text-muted-foreground uppercase">{item.label}</p>
+                    <div key={i} className="p-6 bg-surface-container rounded-[2rem] border border-[#c7c4d8]/5 flex flex-col gap-3 group/item hover:bg-white hover:shadow-md transition-all">
+                       <span className="material-symbols-outlined text-primary-container text-2xl group-hover/item:scale-110 transition-transform">{item.icon}</span>
+                       <div>
+                          <p className="text-xs font-black text-on-surface uppercase tracking-tight">{item.text}</p>
+                          <p className="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-tighter">{item.label}</p>
+                       </div>
                     </div>
                  ))}
               </div>
            </div>
-        </GlassCard>
+        </div>
       </section>
 
-      {/* Unit Manifest (Team) */}
+      {/* Team Manifest */}
       <section className="space-y-12">
         <div className="flex items-center gap-6">
-           <h2 className="text-2xl md:text-4xl font-display font-black uppercase tracking-tighter">Unit_Manifest</h2>
-           <div className="flex-1 h-px bg-foreground/10" />
-           <p className="text-[10px] font-mono text-muted-foreground uppercase">Syntax_Squad // Team_ID: 1042</p>
+           <h2 className="text-3xl md:text-5xl font-black text-on-surface tracking-tighter uppercase">Unit Manifest</h2>
+           <div className="flex-1 h-px bg-[#c7c4d8]/20" />
+           <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">Syntax Squad // Team 1042</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {teamMembers.map((member, i) => (
-            <GlassCard key={i} className="p-8 border-foreground/5 group hover:border-safety-orange/30 transition-all">
-               <div className="flex justify-between items-start mb-8">
-                  <div className="size-12 border border-foreground/10 flex items-center justify-center bg-foreground/5 group-hover:bg-safety-orange/10 transition-colors">
-                     <member.icon className="size-5 text-muted-foreground group-hover:text-safety-orange transition-colors" />
+            <div 
+              key={i} 
+              className="bg-surface-container-lowest rounded-[2.5rem] p-10 border border-[#c7c4d8]/10 shadow-sm group hover:translate-y-[-8px] hover:shadow-xl hover:shadow-primary/5 transition-all duration-500"
+            >
+               <div className="flex justify-between items-start mb-10">
+                  <div className="w-16 h-16 rounded-2xl bg-surface-container flex items-center justify-center group-hover:bg-primary-container group-hover:text-white transition-all duration-300 shadow-inner">
+                     <span className="material-symbols-outlined text-3xl">developer_mode</span>
                   </div>
-                  <span className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest">{member.designation}</span>
+                  <span className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">{member.designation}</span>
                </div>
                
-               <div className="space-y-2 mb-6">
-                  <h4 className="text-xl font-display font-black uppercase tracking-tight leading-none">{member.name}</h4>
-                  <p className="text-[10px] font-mono text-safety-orange uppercase font-bold tracking-[0.2em]">{member.role}</p>
+               <div className="space-y-1 mb-6">
+                  <h4 className="text-2xl font-black text-on-surface tracking-tight leading-none uppercase">{member.name}</h4>
+                  <p className="text-[11px] font-black text-primary-container uppercase tracking-widest">{member.role}</p>
                </div>
                
-               <p className="text-[10px] font-mono text-muted-foreground uppercase leading-relaxed tracking-tighter group-hover:text-foreground transition-colors">
+               <p className="text-sm font-medium text-on-surface-variant leading-relaxed opacity-70 group-hover:opacity-100 transition-opacity">
                   {member.description}
                </p>
                
-               <div className="mt-8 pt-6 border-t border-foreground/5 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="text-[8px] font-mono text-muted-foreground">STATUS: ENGAGED</span>
-                  <div className="flex gap-1">
-                     {[1,2,3,4].map(b => <div key={b} className="size-1 bg-safety-orange" />)}
+               <div className="mt-10 pt-8 border-t border-[#c7c4d8]/10 flex justify-between items-center opacity-40 group-hover:opacity-100 transition-opacity">
+                  <span className="text-[11px] font-black text-emerald-600 uppercase tracking-tighter flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full"></span>
+                    Operational
+                  </span>
+                  <div className="flex gap-1.5">
+                     {[1,2,3].map(b => <div key={b} className="w-1.5 h-1.5 bg-primary rounded-full" />)}
                   </div>
                </div>
-            </GlassCard>
+            </div>
           ))}
         </div>
       </section>
 
-      {/* Vision / Mission */}
-      <section className="relative">
-         <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-64 bg-safety-orange/5 blur-3xl rounded-full pointer-events-none" />
-         <GlassCard className="p-16 border-foreground/10 text-center space-y-8 relative overflow-hidden">
-            <div className="absolute top-0 left-0 p-6 opacity-5">
-               <Zap className="size-24 scale-150" />
-            </div>
-            
-            <div className="space-y-4">
-               <h3 className="text-4xl md:text-5xl font-display font-black uppercase tracking-tighter">Strategic_Vision</h3>
-               <p className="text-xl md:text-2xl font-mono text-foreground uppercase tracking-tighter max-w-4xl mx-auto leading-tight italic">
+      {/* Strategic Vision */}
+      <section className="relative group">
+         <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-80 bg-primary/10 blur-[100px] rounded-full opacity-50 group-hover:opacity-100 transition-opacity duration-1000" />
+         <div className="bg-on-surface text-white rounded-[4rem] p-16 md:p-24 text-center space-y-10 relative overflow-hidden shadow-2xl">
+            <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+            <div className="relative space-y-6">
+               <h3 className="text-3xl md:text-5xl font-black tracking-tighter uppercase">Strategic Vision</h3>
+               <p className="text-xl md:text-3xl font-black leading-tight italic max-w-5xl mx-auto text-primary-container-variant bg-clip-text text-transparent bg-gradient-to-r from-primary-fixed-dim to-secondary-fixed">
                  "To create a revolutionary digital bridge between institutions and their legacy networks, fostering meritocratic growth through autonomous engagement protocols."
                </p>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-4 pt-10">
-               <IndustrialButton variant="safety" className="h-14 px-12 text-[10px] tracking-[0.3em]">
-                  <Rocket className="mr-3 size-4" /> EXPLORE_SYSTEMS
-               </IndustrialButton>
-               <IndustrialButton variant="outline" className="h-14 px-12 text-[10px] tracking-[0.3em]">
-                  <Users className="mr-3 size-4" /> JOIN_NETWORK
-               </IndustrialButton>
+            <div className="flex flex-wrap justify-center gap-6 pt-6 relative">
+               <button className="px-10 py-4 bg-white text-on-surface rounded-2xl font-black text-sm uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl">
+                  Explore Ecosystem
+               </button>
+               <button className="px-10 py-4 bg-transparent border-2 border-white/20 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-white/10 transition-all">
+                  Join Network
+               </button>
             </div>
-         </GlassCard>
+         </div>
       </section>
 
       {/* Operational Metrics */}
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: "Unit_Active", val: "06", icon: Users },
-          { label: "Mission_Sync", val: "100%", icon: Target },
-          { label: "Protocol_ID", val: "25017", icon: Award },
-          { label: "Legacy_Nodes", val: "∞", icon: Activity }
+          { label: "Active Units", val: "06", icon: "groups_3" },
+          { label: "Mission Sync", val: "100%", icon: "target" },
+          { label: "Protocol ID", val: "25017", icon: "fingerprint" },
+          { label: "Legacy Nodes", val: "∞", icon: "lan" }
         ].map((stat, i) => (
-          <div key={i} className="p-6 industrial-border bg-foreground/5 hover:bg-foreground/10 transition-colors group">
+          <div key={i} className="bg-surface-container-lowest p-8 rounded-[2rem] border border-[#c7c4d8]/10 hover:border-primary/40 transition-all group shadow-sm">
              <div className="flex items-center gap-3 mb-4">
-                <stat.icon className="size-3 text-safety-orange" />
-                <span className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">{stat.label}</span>
+                <span className="material-symbols-outlined text-primary-container text-xl group-hover:rotate-12 transition-transform">{stat.icon}</span>
+                <span className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">{stat.label}</span>
              </div>
-             <p className="text-3xl font-display font-black tracking-tighter group-hover:translate-x-1 transition-transform">{stat.val}</p>
+             <p className="text-4xl font-black text-on-surface tracking-tighter group-hover:translate-x-2 transition-transform">{stat.val}</p>
           </div>
         ))}
       </section>
 
-      {/* Security Footer Overlay (Purely visual) */}
-      <div className="fixed bottom-0 left-0 w-full p-4 bg-background/80 backdrop-blur-sm border-t border-foreground/10 z-50 sm:flex hidden justify-between items-center">
-         <div className="flex gap-8 text-[8px] font-mono text-muted-foreground uppercase tracking-widest">
-            <span className="flex items-center gap-2"><div className="size-1.5 bg-safety-orange animate-pulse" /> SYSTEM_STABLE</span>
-            <span>OS_VERSION: 1.0.4-NEO</span>
-            <span>DEDICATED_LINE_SECURED</span>
+      {/* Footer Branding */}
+      <div className="pt-20 border-t border-[#c7c4d8]/10 flex flex-wrap justify-between items-center gap-6">
+         <div className="flex items-center gap-8 text-[11px] font-black uppercase text-on-surface-variant/40 tracking-widest">
+            <span className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 bg-primary-container rounded-full"></span> 
+              System Stable
+            </span>
+            <span>Ref: 1.0.4-Stitch</span>
          </div>
-         <div className="text-[8px] font-mono text-muted-foreground uppercase opacity-50">
-            © 2025 ALUMNET_SYSTEMS_INTL // ALL_RIGHTS_RESERVED
-         </div>
+         <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.4em]">
+            AlumNet Engineering © 2026
+         </p>
       </div>
     </div>
   );
-};
+};

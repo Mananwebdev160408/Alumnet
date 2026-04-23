@@ -1,93 +1,75 @@
 import { useState } from "react";
-import { IndustrialButton } from "@/components/IndustrialButton";
-import { GlassCard } from "@/components/GlassCard";
-import { StatusBadge } from "@/components/StatusBadge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  UserCheck, 
-  UserX, 
-  Clock, 
-  MessageCircle, 
-  Mail, 
-  CheckCircle,
-  Zap,
-  Activity,
-  Layers,
-  Network,
-  Maximize2
-} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
-// Mock data updated for Neo-Industrial theme
+// Mock data updated for Stitch theme
 const mockConnections = [
   {
     id: 1,
-    name: "SARAH_JOHNSON",
-    nodeId: "NODE_S102",
+    name: "Sarah Johnson",
+    nodeId: "AL-102",
     occupation: "Software Engineer at Google",
     graduationYear: "2019",
     avatar: "SJ",
-    connectionDate: "14D_AGO",
+    connectionDate: "14 days ago",
     mutualConnections: 5,
-    status: "STABLE"
+    status: "Active"
   },
   {
     id: 2,
-    name: "MIKE_CHEN",
-    nodeId: "NODE_M405",
+    name: "Mike Chen",
+    nodeId: "AL-405",
     occupation: "Product Manager at Meta",
     graduationYear: "2018", 
     avatar: "MC",
-    connectionDate: "30D_AGO",
+    connectionDate: "30 days ago",
     mutualConnections: 3,
-    status: "STABLE"
+    status: "Active"
   },
   {
     id: 3,
-    name: "EMMA_WILSON",
-    nodeId: "NODE_E901",
+    name: "Emma Wilson",
+    nodeId: "AL-901",
     occupation: "Data Scientist at Netflix",
     graduationYear: "2020",
     avatar: "EW",
-    connectionDate: "3D_AGO",
+    connectionDate: "3 days ago",
     mutualConnections: 7,
-    status: "STABLE"
+    status: "Active"
   }
 ];
 
 const mockPendingRequests = [
   {
     id: 4,
-    name: "DAVID_RODRIGUEZ",
-    nodeId: "NODE_D708",
+    name: "David Rodriguez",
+    nodeId: "ST-708",
     occupation: "UX Designer at Apple",
     graduationYear: "2017",
     avatar: "DR",
-    requestDate: "48H_AGO",
+    requestDate: "48h ago",
     mutualConnections: 2,
     type: "sent"
   },
   {
     id: 5,
-    name: "LISA_ZHANG", 
-    nodeId: "NODE_L211",
+    name: "Lisa Zhang", 
+    nodeId: "AL-211",
     occupation: "Marketing Manager at Spotify",
     graduationYear: "2021",
     avatar: "LZ",
-    requestDate: "24H_AGO",
+    requestDate: "24h ago",
     mutualConnections: 4,
     type: "received"
   },
   {
     id: 6,
-    name: "ALEX_THOMPSON",
-    nodeId: "NODE_A552",
+    name: "Alex Thompson",
+    nodeId: "ST-552",
     occupation: "Technical Intern",
     graduationYear: "2025",
     avatar: "AT", 
-    requestDate: "5H_AGO",
+    requestDate: "5h ago",
     mutualConnections: 1,
     type: "received"
   }
@@ -97,226 +79,200 @@ export const Connections = () => {
   const { toast } = useToast();
   const [connections, setConnections] = useState(mockConnections);
   const [pendingRequests, setPendingRequests] = useState(mockPendingRequests);
+  const [activeTab, setActiveTab] = useState("established");
 
   const handleAcceptRequest = (requestId: number) => {
     const request = pendingRequests.find(r => r.id === requestId);
     if (request) {
       setConnections(prev => [...prev, {
         ...request,
-        connectionDate: "SYNC_NOW",
-        status: "STABLE"
+        connectionDate: "Just now",
+        status: "Active"
       }]);
       setPendingRequests(prev => prev.filter(r => r.id !== requestId));
-      toast({ title: "LINK_ESTABLISHED", description: `Node ${request.name} added to primary network.` });
+      toast({ title: "Connection Established", description: `${request.name} is now in your network.` });
     }
   };
 
   const handleDeclineRequest = (requestId: number) => {
-    const request = pendingRequests.find(r => r.id === requestId);
     setPendingRequests(prev => prev.filter(r => r.id !== requestId));
-    toast({ variant: "destructive", title: "PROTOCOL_DENIED", description: `Connection request from ${request?.name} aborted.` });
+    toast({ variant: "destructive", title: "Request Declined", description: "The connection request has been removed." });
   };
 
   const handleWithdrawRequest = (requestId: number) => {
-    const request = pendingRequests.find(r => r.id === requestId);
     setPendingRequests(prev => prev.filter(r => r.id !== requestId));
-    toast({ title: "RELAY_WITHDRAWN", description: `Request to ${request?.name} cancelled.` });
+    toast({ title: "Request Withdrawn", description: "Your connection request was cancelled." });
   };
 
   const receivedRequests = pendingRequests.filter(r => r.type === "received");
   const sentRequests = pendingRequests.filter(r => r.type === "sent");
 
   return (
-    <div className="p-4 lg:p-10 space-y-10 mt-16 max-w-[1400px] mx-auto">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-foreground/10 pb-10">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <Network className="size-4 text-safety-orange" />
-            <p className="text-[10px] font-mono uppercase tracking-[0.4em] text-muted-foreground">Network Map // AlumNet_OS</p>
-          </div>
-          <h1 className="text-4xl md:text-6xl font-display font-black tracking-tighter uppercase leading-none">
-            My_Connections
-          </h1>
+    <div className="space-y-10">
+      {/* Network Header */}
+      <section className="bg-surface-container-lowest p-8 rounded-[2.5rem] border border-[#c7c4d8]/10 shadow-sm flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="space-y-1 text-center md:text-left">
+           <h1 className="text-3xl font-black text-on-surface tracking-tight">Network Map</h1>
+           <p className="text-sm font-bold text-on-surface-variant opacity-60 uppercase tracking-widest">AlumNet Collaborative Ecosystem</p>
         </div>
         <div className="flex items-center gap-4">
-           <div className="text-right">
-              <p className="text-[10px] font-mono text-muted-foreground uppercase">Network Load</p>
-              <p className="text-xl font-display font-bold">1.24 TB/s</p>
+           <div className="text-right hidden sm:block">
+              <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">Network Load</p>
+              <p className="text-sm font-black text-primary">High Fidelity</p>
            </div>
-           <div className="size-12 industrial-border flex items-center justify-center bg-foreground/5">
-              <Activity className="size-5 text-safety-orange" />
+           <div className="w-12 h-12 rounded-2xl bg-surface-container flex items-center justify-center">
+              <span className="material-symbols-outlined text-primary-container text-2xl font-black">hub</span>
            </div>
         </div>
-      </div>
+      </section>
 
-      {/* Grid: Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <GlassCard className="p-8 border-foreground/5 transition-all hover:border-safety-orange/30 group">
-          <div className="flex justify-between items-start mb-6">
-            <div className="size-10 bg-foreground/5 flex items-center justify-center industrial-border group-hover:bg-safety-orange/10 transition-colors">
-              <UserCheck className="size-5 text-safety-orange" />
-            </div>
-            <span className="text-[10px] font-mono text-muted-foreground">SYNC_STABLE</span>
+      {/* Analytics Grid */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[
+          { label: "Established Nodes", val: connections.length, color: "text-primary", icon: "group", trend: "STABLE" },
+          { label: "Incoming Requests", val: receivedRequests.length, color: "text-secondary", icon: "inbox", trend: "PENDING" },
+          { label: "Transmitted Relays", val: sentRequests.length, color: "text-on-surface-variant", icon: "send", trend: "ACTIVE" }
+        ].map((stat, i) => (
+          <div key={i} className="bg-surface-container-lowest p-10 rounded-[2.5rem] border border-[#c7c4d8]/10 shadow-sm group hover:border-primary/20 transition-all">
+             <div className="flex justify-between items-start mb-6">
+                <div className="w-12 h-12 bg-surface-container rounded-2xl flex items-center justify-center group-hover:bg-primary/5 transition-colors">
+                   <span className={cn("material-symbols-outlined text-2xl", stat.color)}>{stat.icon}</span>
+                </div>
+                <span className="text-[10px] font-black text-on-surface-variant/30 uppercase tracking-widest">{stat.trend}</span>
+             </div>
+             <div className="space-y-1">
+                <h3 className="text-4xl font-black text-on-surface tracking-tighter leading-none">{stat.val}</h3>
+                <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/50">{stat.label}</p>
+             </div>
           </div>
-          <h3 className="text-4xl font-display font-black tracking-tighter">{connections.length}</h3>
-          <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mt-1">Total_Established_Nodes</p>
-        </GlassCard>
+        ))}
+      </section>
 
-        <GlassCard className="p-8 border-foreground/5 transition-all hover:border-electric-blue/30 group">
-          <div className="flex justify-between items-start mb-6">
-            <div className="size-10 bg-foreground/5 flex items-center justify-center industrial-border group-hover:bg-electric-blue/10 transition-colors">
-              <Clock className="size-5 text-electric-blue" />
-            </div>
-            <span className="text-[10px] font-mono text-muted-foreground">PENDING_INPUT</span>
+      {/* Main Connection Interface */}
+      <section className="space-y-8">
+        <div className="flex bg-surface-container-low p-1.5 rounded-[1.5rem] w-fit">
+           <button 
+             onClick={() => setActiveTab("established")}
+             className={cn(
+               "px-8 py-3 rounded-[1.25rem] text-sm font-black transition-all",
+               activeTab === "established" ? "bg-white text-primary shadow-sm" : "text-on-surface-variant opacity-60 hover:opacity-100"
+             )}
+           >
+             Established ({connections.length})
+           </button>
+           <button 
+             onClick={() => setActiveTab("requests")}
+             className={cn(
+               "px-8 py-3 rounded-[1.25rem] text-sm font-black transition-all",
+               activeTab === "requests" ? "bg-white text-primary shadow-sm" : "text-on-surface-variant opacity-60 hover:opacity-100"
+             )}
+           >
+             Requests ({receivedRequests.length + sentRequests.length})
+           </button>
+        </div>
+
+        {activeTab === "established" ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+             {connections.map((node) => (
+               <div key={node.id} className="bg-surface-container-lowest p-8 rounded-[2.5rem] border border-[#c7c4d8]/10 shadow-sm group hover:shadow-xl hover:shadow-primary/5 transition-all duration-500 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-2 h-2 bg-primary rounded-bl-xl opacity-30 group-hover:opacity-100 transition-opacity"></div>
+                  
+                  <div className="flex items-center gap-6 mb-8">
+                     <div className="w-16 h-16 rounded-[1.5rem] bg-surface-container-low flex items-center justify-center text-xl font-black text-on-surface-variant shadow-inner group-hover:scale-110 transition-transform">
+                        {node.avatar}
+                     </div>
+                     <div className="flex-1 min-w-0">
+                        <h4 className="text-lg font-black text-on-surface truncate tracking-tight">{node.name}</h4>
+                        <p className="text-[10px] font-black text-primary-container uppercase tracking-widest mb-1 italic">Class of {node.graduationYear}</p>
+                        <div className="flex items-center gap-2 px-2 py-0.5 bg-emerald-50 w-fit rounded-full">
+                           <span className="w-1 h-1 bg-emerald-500 rounded-full"></span>
+                           <span className="text-[9px] font-black text-emerald-600 uppercase">Synchronized</span>
+                        </div>
+                     </div>
+                  </div>
+
+                  <p className="text-xs font-medium text-on-surface-variant opacity-70 h-10 mb-8 line-clamp-2 leading-relaxed">
+                     {node.occupation}
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-3">
+                     <button className="py-3 bg-surface-container-low rounded-xl text-[10px] font-black uppercase text-on-surface-variant hover:bg-primary/5 hover:text-primary transition-all flex items-center justify-center gap-2">
+                        <span className="material-symbols-outlined text-sm">chat</span>
+                        Message
+                     </button>
+                     <button className="py-3 bg-surface-container-low rounded-xl text-[10px] font-black uppercase text-on-surface-variant hover:bg-primary/5 hover:text-primary transition-all flex items-center justify-center gap-2">
+                        <span className="material-symbols-outlined text-sm">person</span>
+                        Profile
+                     </button>
+                  </div>
+               </div>
+             ))}
           </div>
-          <h3 className="text-4xl font-display font-black tracking-tighter">{receivedRequests.length}</h3>
-          <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mt-1">Incoming_Protocol_Requests</p>
-        </GlassCard>
-
-        <GlassCard className="p-8 border-foreground/5 transition-all hover:border-muted-foreground/30 group">
-          <div className="flex justify-between items-start mb-6">
-            <div className="size-10 bg-foreground/5 flex items-center justify-center industrial-border group-hover:bg-foreground/10 transition-colors">
-              <Layers className="size-5 text-muted-foreground" />
-            </div>
-            <span className="text-[10px] font-mono text-muted-foreground">ACTIVE_RELAY</span>
-          </div>
-          <h3 className="text-4xl font-display font-black tracking-tighter">{sentRequests.length}</h3>
-          <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mt-1">Transmitted_Link_Requests</p>
-        </GlassCard>
-      </div>
-
-      {/* Main Interface */}
-      <Tabs defaultValue="established" className="space-y-8">
-        <TabsList className="bg-transparent border-b border-foreground/10 w-full justify-start gap-8 h-12 p-0 rounded-none">
-          <TabsTrigger 
-            value="established" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-safety-orange data-[state=active]:bg-transparent text-[11px] font-mono uppercase tracking-widest px-0 h-10 transition-all hover:text-safety-orange"
-          >
-            Established_Nodes ({connections.length})
-          </TabsTrigger>
-          <TabsTrigger 
-            value="protocols" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-safety-orange data-[state=active]:bg-transparent text-[11px] font-mono uppercase tracking-widest px-0 h-10 transition-all hover:text-safety-orange"
-          >
-            Protocol_Requests ({receivedRequests.length + sentRequests.length})
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="established" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-           {connections.length > 0 ? (
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-               {connections.map((node) => (
-                 <GlassCard key={node.id} className="p-6 border-foreground/5 group hover:bg-foreground/[0.02] transition-colors relative overflow-hidden">
-                    {/* Background accent */}
-                    <div className="absolute top-0 right-0 size-1 bg-safety-orange opacity-50" />
-                    
-                    <div className="flex items-start gap-4 mb-6">
-                       <Avatar className="size-16 rounded-none border border-foreground/10 group-hover:border-safety-orange/50 transition-colors">
-                          <AvatarFallback className="bg-foreground/5 text-xl font-display font-black">{node.avatar}</AvatarFallback>
-                       </Avatar>
-                       <div className="flex-1 min-w-0">
-                          <p className="text-[9px] font-mono text-muted-foreground tracking-widest mb-1">{node.nodeId}</p>
-                          <h3 className="font-display font-bold text-lg uppercase leading-none truncate mb-2">{node.name}</h3>
-                          <div className="flex gap-2">
-                             <StatusBadge status="online" label="STABLE" />
-                             <span className="text-[9px] font-mono text-muted-foreground uppercase opacity-50">CLASS_{node.graduationYear}</span>
+        ) : (
+          <div className="grid lg:grid-cols-2 gap-10">
+            {/* Incoming Requests */}
+            <div className="space-y-6">
+               <div className="flex items-center gap-4">
+                  <h3 className="text-xs font-black text-on-surface uppercase tracking-[0.2em]">Incoming Portals</h3>
+                  <div className="flex-1 h-px bg-[#c7c4d8]/20" />
+               </div>
+               <div className="space-y-4">
+                  {receivedRequests.map((req) => (
+                    <div key={req.id} className="bg-surface-container-lowest p-6 rounded-[2rem] border border-[#c7c4d8]/10 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6 group hover:border-primary/30 transition-all">
+                       <div className="flex items-center gap-5">
+                          <div className="w-14 h-14 bg-surface-container rounded-2xl flex items-center justify-center text-sm font-black text-on-surface-variant shadow-inner">
+                             {req.avatar}
+                          </div>
+                          <div>
+                             <h4 className="font-black text-on-surface uppercase tracking-tight">{req.name}</h4>
+                             <p className="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest">
+                                {req.occupation} • {req.requestDate}
+                             </p>
                           </div>
                        </div>
+                       <div className="flex gap-2 w-full md:w-auto">
+                          <button onClick={() => handleAcceptRequest(req.id)} className="flex-1 md:flex-none h-11 px-6 bg-primary-container text-white rounded-xl text-[10px] font-black uppercase shadow-lg shadow-primary-container/20 hover:scale-105 active:scale-95 transition-all">
+                             Accept
+                          </button>
+                          <button onClick={() => handleDeclineRequest(req.id)} className="h-11 px-4 bg-surface-container text-on-surface-variant rounded-xl hover:bg-error/5 hover:text-error transition-all">
+                             <span className="material-symbols-outlined text-sm font-black">close</span>
+                          </button>
+                       </div>
                     </div>
+                  ))}
+                  {receivedRequests.length === 0 && <p className="text-xs font-bold text-center py-12 text-on-surface-variant opacity-40 uppercase tracking-widest border-2 border-dashed border-[#c7c4d8]/20 rounded-[2rem]">No incoming requests</p>}
+               </div>
+            </div>
 
-                    <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-tighter h-8 mb-6">
-                      {node.occupation}
-                    </p>
-
-                    <div className="grid grid-cols-2 gap-3">
-                       <IndustrialButton variant="outline" className="h-10 text-[9px] uppercase tracking-widest font-mono">
-                          <MessageCircle className="mr-2 size-3" /> Transmit
-                       </IndustrialButton>
-                       <IndustrialButton variant="outline" className="h-10 text-[9px] uppercase tracking-widest font-mono">
-                          <Maximize2 className="mr-2 size-3" /> Profile
-                       </IndustrialButton>
+            {/* Outgoing Requests */}
+            <div className="space-y-6">
+               <div className="flex items-center gap-4">
+                  <h3 className="text-xs font-black text-on-surface uppercase tracking-[0.2em]">Outgoing Relays</h3>
+                  <div className="flex-1 h-px bg-[#c7c4d8]/20" />
+               </div>
+               <div className="space-y-4">
+                  {sentRequests.map((req) => (
+                    <div key={req.id} className="bg-surface-container-low/30 p-6 rounded-[2rem] border border-[#c7c4d8]/5 flex flex-col md:flex-row items-center justify-between gap-6 opacity-80 hover:opacity-100 transition-opacity">
+                       <div className="flex items-center gap-5">
+                          <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-[10px] font-black text-on-surface-variant shadow-sm uppercase">
+                             {req.avatar}
+                          </div>
+                          <div>
+                             <h4 className="font-black text-on-surface/60 uppercase tracking-tight text-sm">{req.name}</h4>
+                             <p className="text-[9px] font-bold text-on-surface-variant/40 uppercase tracking-tighter">Sent {req.requestDate} • Pending Sync</p>
+                          </div>
+                       </div>
+                       <button onClick={() => handleWithdrawRequest(req.id)} className="w-full md:w-auto px-6 py-2.5 bg-white border border-[#c7c4d8]/10 text-[10px] font-black uppercase text-on-surface-variant hover:text-error transition-all rounded-xl">
+                          Withdraw
+                       </button>
                     </div>
-                 </GlassCard>
-               ))}
-             </div>
-           ) : (
-             <div className="h-64 border border-dashed border-foreground/10 flex flex-col items-center justify-center gap-4">
-                <Zap className="size-8 text-muted-foreground opacity-20" />
-                <p className="text-[10px] font-mono uppercase tracking-[0.4em] text-muted-foreground">No established nodes detected</p>
-             </div>
-           )}
-        </TabsContent>
-
-        <TabsContent value="protocols" className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
-           {/* Incoming */}
-           <div className="space-y-6">
-              <div className="flex items-center gap-4">
-                 <h2 className="text-[11px] font-mono uppercase tracking-[0.3em] text-muted-foreground">_Incoming_Transmissions</h2>
-                 <div className="flex-1 h-px bg-foreground/5" />
-              </div>
-              
-              <div className="grid gap-4">
-                 {receivedRequests.map((req) => (
-                   <div key={req.id} className="p-6 border border-foreground/5 bg-foreground/[0.01] flex flex-col md:flex-row md:items-center justify-between gap-6 group hover:border-electric-blue/20 transition-colors">
-                      <div className="flex items-center gap-5">
-                         <Avatar className="size-14 rounded-none border border-foreground/5 grayscale">
-                            <AvatarFallback className="bg-foreground/5 font-display font-black">{req.avatar}</AvatarFallback>
-                         </Avatar>
-                         <div>
-                            <div className="flex items-center gap-3">
-                               <h4 className="font-display font-bold uppercase tracking-tight">{req.name}</h4>
-                               <span className="text-[9px] font-mono text-muted-foreground">ID: {req.nodeId}</span>
-                            </div>
-                            <p className="text-[10px] font-mono text-muted-foreground uppercase mt-1 tracking-tighter">
-                               {req.occupation} • RELAY_SENT: {req.requestDate}
-                            </p>
-                         </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-3">
-                         <IndustrialButton variant="safety" onClick={() => handleAcceptRequest(req.id)} className="h-10 px-8">
-                            <CheckCircle className="mr-2 size-4" /> ACCEPT_LINK
-                         </IndustrialButton>
-                         <IndustrialButton variant="outline" onClick={() => handleDeclineRequest(req.id)} className="h-10 px-6">
-                            <UserX className="mr-2 size-4" /> ABORT
-                         </IndustrialButton>
-                      </div>
-                   </div>
-                 ))}
-                 {receivedRequests.length === 0 && <p className="text-[9px] font-mono text-muted-foreground uppercase text-center p-12 bg-foreground/[0.01]">Zero incoming protocol requests</p>}
-              </div>
-           </div>
-
-           {/* Outgoing */}
-           <div className="space-y-6">
-              <div className="flex items-center gap-4">
-                 <h2 className="text-[11px] font-mono uppercase tracking-[0.3em] text-muted-foreground">_Outbound_Protocols</h2>
-                 <div className="flex-1 h-px bg-foreground/5" />
-              </div>
-              
-              <div className="grid gap-4">
-                 {sentRequests.map((req) => (
-                   <div key={req.id} className="p-6 border border-foreground/5 bg-foreground/[0.01] flex flex-col md:flex-row md:items-center justify-between gap-6 opacity-80 hover:opacity-100 transition-opacity">
-                      <div className="flex items-center gap-5">
-                         <Avatar className="size-12 rounded-none border border-foreground/5">
-                            <AvatarFallback className="bg-foreground/5 font-mono text-xs">{req.avatar}</AvatarFallback>
-                         </Avatar>
-                         <div>
-                            <h4 className="font-display font-bold uppercase tracking-tight text-sm">{req.name}</h4>
-                            <p className="text-[9px] font-mono text-muted-foreground uppercase mt-1">TRANSMITTED: {req.requestDate} // STATUS: PENDING_SYNC</p>
-                         </div>
-                      </div>
-                      <IndustrialButton variant="outline" onClick={() => handleWithdrawRequest(req.id)} className="h-10 px-6 text-[9px]">
-                         WITHDRAW_RELAY
-                      </IndustrialButton>
-                   </div>
-                 ))}
-                 {sentRequests.length === 0 && <p className="text-[9px] font-mono text-muted-foreground uppercase text-center p-12 bg-foreground/[0.01]">Zero outbound protocols active</p>}
-              </div>
-           </div>
-        </TabsContent>
-      </Tabs>
+                  ))}
+                  {sentRequests.length === 0 && <p className="text-xs font-bold text-center py-12 text-on-surface-variant opacity-40 uppercase tracking-widest border-2 border-dashed border-[#c7c4d8]/20 rounded-[2rem]">No outoing relays</p>}
+               </div>
+            </div>
+          </div>
+        )}
+      </section>
     </div>
   );
-};
+};
