@@ -37,8 +37,11 @@ client/                         # Project Root
 ├── src/                        # Source files
 │   ├── components/             # Reusable UI components & layouts
 │   ├── hooks/                  # Custom React hooks
-│   ├── lib/                # Config, context providers, and utils
+│   ├── lib/                    # Config, context providers, and utils
 │   └── pages/                  # Page views organized by role / route
+├── functions/                  # Firebase Cloud Functions (Backend APIs)
+│   ├── index.js                # Cloud function handlers (e.g. AI Chat backend)
+│   └── package.json            # Cloud function package config
 ├── scripts/                    # Database seeding & administrative scripts
 ├── docs/                       # Project Documentation (Route specs, tech docs)
 │   ├── ALUMNET_DOCUMENTATION.md # In-depth technical architecture
@@ -51,7 +54,7 @@ client/                         # Project Root
 
 ## ⚙️ Development Setup
 
-Follow these steps to run the client application locally.
+Follow these steps to run the client application and backend cloud functions locally.
 
 ### Prerequisites
 
@@ -61,7 +64,7 @@ Follow these steps to run the client application locally.
     npm install -g firebase-tools
     ```
 
-### Running Locally
+### 1. Running the Client Locally
 
 1.  **Install dependencies** using `npm` or `bun`:
     ```sh
@@ -85,7 +88,26 @@ Follow these steps to run the client application locally.
     npm run dev
     ```
 
-### Seeding the Database
+### 2. Running Backend Cloud Functions Locally
+
+1.  Navigate to the `functions` directory:
+    ```sh
+    cd functions
+    ```
+2.  Install dependencies:
+    ```sh
+    npm install
+    ```
+3.  Configure local secret keys. Set your `GITHUB_TOKEN` secret for the AI assistant chatbot:
+    ```sh
+    firebase functions:secrets:set GITHUB_TOKEN="your_github_token"
+    ```
+4.  Run the Firebase Emulator Suite to emulate functions locally:
+    ```sh
+    firebase emulators:start
+    ```
+
+### 3. Seeding the Database
 
 To run the seeding script and populate your Firestore instance with sample mock data (students, alumni, sessions, referrals, and admin configurations):
 
