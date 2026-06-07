@@ -1,223 +1,128 @@
-import { useState, useEffect, useRef } from "react";
-import { cn } from "@/lib/utils";
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Send, Bot, User, Sparkles, RefreshCcw } from "lucide-react";
 
-interface Message {
-  id: string;
-  content: string;
-  sender: "user" | "ai";
-  timestamp: Date;
-}
-
-export const AIChat = () => {
-  const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const handleSendMessage = async () => {
-    if (!message.trim()) return;
-
-    const userMessage: Message = {
-      id: Date.now().toString() + "-user",
-      content: message.trim(),
-      sender: "user",
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    const currentMessage = message.trim();
-    setMessage(""); 
-    setIsLoading(true);
-
-    try {
-      const functionUrl = import.meta.env.VITE_AICHAT_FUNCTION_URL;
-      
-      if (!functionUrl) {
-        throw new Error("AI Service Unavailable: Missing API endpoint");
-      }
-
-      const res = await fetch(functionUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: currentMessage })
-      });
-      
-      const data = await res.json();
-      
-      if (!data.success) {
-        throw new Error(data.message || "Unidentified AI Core Error");
-      }
-
-      const messageContent = typeof data.message === 'string' ? data.message : JSON.stringify(data.message);
-      
-      const aiMessage: Message = {
-        id: Date.now().toString() + "-ai",
-        content: messageContent,
-        sender: "ai",
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, aiMessage]);
-      
-    } catch (error: any) {
-      console.error("AI_CORE_LINK_ERROR:", error);
-      const errorMessage: Message = {
-        id: Date.now().toString() + "-ai-error",
-        content: `Error: ${error.message}. Please try again later.`,
-        sender: "ai",
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
+export default function AIChat() {
   return (
-    <div className="h-[calc(100vh-8rem)] flex flex-col gap-6">
-      {/* Header Panel */}
-      <section className="bg-surface-container-lowest p-6 rounded-[1.5rem] border border-[#c7c4d8]/10 shadow-sm flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-primary-container flex items-center justify-center text-white shadow-lg shadow-primary-container/20">
-            <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>smart_toy</span>
-          </div>
-          <div>
-            <h2 className="text-xl font-black text-on-surface tracking-tight leading-tight">AI Network Assistant</h2>
-            <div className="flex items-center gap-2 mt-1">
-              <div className={cn("w-2 h-2 rounded-full", isLoading ? "bg-amber-400 animate-pulse" : "bg-emerald-500")}></div>
-              <p className="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest leading-none">
-                {isLoading ? "Processing Request" : "System Online"}
-              </p>
-            </div>
-          </div>
+    <div className="flex flex-col h-[calc(100vh-4rem)] p-6 w-full max-w-5xl mx-auto space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight text-foreground flex items-center">
+            AI Assistant <Sparkles className="ml-2 h-5 w-5 text-primary" />
+          </h2>
+          <p className="text-muted-foreground">Ask questions about the network, events, or get career advice.</p>
         </div>
-        <div className="hidden md:flex gap-4 items-center">
-           <div className="text-right">
-              <p className="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-tighter">Powered By</p>
-              <p className="text-sm font-black text-primary-container">AlumNet Core</p>
-           </div>
-           <button className="p-3 bg-surface-container rounded-xl text-on-surface-variant hover:text-primary transition-all">
-              <span className="material-symbols-outlined">settings_suggest</span>
-           </button>
-        </div>
-      </section>
+        <Button variant="outline" size="sm">
+          <RefreshCcw className="mr-2 h-4 w-4" /> New Chat
+        </Button>
+      </div>
 
-      {/* Chat Canvas */}
-      <div className="flex-1 bg-surface-container-lowest rounded-[2rem] border border-[#c7c4d8]/10 shadow-sm flex flex-col overflow-hidden relative">
-        <div className="absolute inset-0 opacity-5 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-        
-        {/* Messages Feed */}
-        <div className="flex-1 overflow-y-auto p-8 space-y-8 no-scrollbar relative">
-          {messages.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center space-y-4 max-w-md mx-auto opacity-50">
-               <div className="w-20 h-20 rounded-[2rem] bg-surface-container flex items-center justify-center">
-                  <span className="material-symbols-outlined text-4xl text-on-surface-variant">forum</span>
-               </div>
-               <h3 className="text-lg font-bold text-on-surface">How can I help you today?</h3>
-               <p className="text-sm text-on-surface-variant font-medium">
-                  Ask me about alumni connections, career paths, mentorship opportunities, or campus events.
-               </p>
-            </div>
-          ) : (
-            messages.map((msg) => (
-              <div 
-                key={msg.id} 
-                className={cn(
-                  "flex items-start gap-4 animate-in fade-in slide-in-from-bottom-4",
-                  msg.sender === "user" ? "flex-row-reverse" : ""
-                )}
-              >
-                <div className={cn(
-                  "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm",
-                  msg.sender === "user" ? "bg-white border border-slate-100" : "bg-primary-container text-white"
-                )}>
-                  <span className="material-symbols-outlined text-xl">
-                    {msg.sender === "user" ? "person" : "smart_toy"}
-                  </span>
-                </div>
-                <div className={cn(
-                  "max-w-[80%] space-y-1",
-                  msg.sender === "user" ? "text-right" : ""
-                )}>
-                  <p className="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest px-1">
-                    {msg.sender === "user" ? "You" : "Assistant"} • {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </p>
-                  <div className={cn(
-                    "p-5 rounded-2xl text-sm leading-relaxed shadow-sm font-medium",
-                    msg.sender === "user" 
-                      ? "bg-white border border-slate-100 text-on-surface rounded-tr-none" 
-                      : "bg-surface-container-high text-on-surface rounded-tl-none border border-[#c7c4d8]/10"
-                  )}>
-                    {msg.content}
-                  </div>
+      <Card className="flex-1 flex flex-col border-border shadow-sm overflow-hidden bg-background">
+        <ScrollArea className="flex-1 p-6">
+          <div className="space-y-6 max-w-3xl mx-auto">
+            {/* Intro Message */}
+            <div className="flex items-start gap-4">
+              <Avatar className="h-10 w-10 border border-primary/20 shrink-0">
+                <AvatarFallback className="bg-primary/10 text-primary">
+                  <Bot className="h-5 w-5" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="bg-muted/30 border border-border p-4 rounded-2xl rounded-tl-sm shadow-sm">
+                <p className="text-sm font-medium mb-2">Hello! I'm your AlumNet AI Assistant.</p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  I can help you find connections, prep for interviews, or navigate the platform. How can I assist you today?
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="outline" size="sm" className="h-7 text-xs bg-background">Find a mentor</Button>
+                  <Button variant="outline" size="sm" className="h-7 text-xs bg-background">Review my profile</Button>
+                  <Button variant="outline" size="sm" className="h-7 text-xs bg-background">Upcoming events</Button>
                 </div>
               </div>
-            ))
-          )}
-          {isLoading && (
-            <div className="flex items-start gap-4 animate-pulse">
-               <div className="w-10 h-10 rounded-xl bg-primary-container/20 flex items-center justify-center flex-shrink-0">
-                  <span className="material-symbols-outlined text-xl text-primary-container">smart_toy</span>
-               </div>
-               <div className="space-y-1">
-                  <p className="text-[10px] font-bold text-primary-container uppercase tracking-widest px-1">Assistant is thinking...</p>
-                  <div className="p-5 bg-surface-container rounded-2xl rounded-tl-none border border-[#c7c4d8]/5 flex gap-2 items-center">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary-container animate-bounce"></div>
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary-container animate-bounce delay-100"></div>
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary-container animate-bounce delay-200"></div>
-                  </div>
-               </div>
             </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
+
+            {/* User Message */}
+            <div className="flex items-start gap-4 flex-row-reverse">
+              <Avatar className="h-10 w-10 border border-border shrink-0">
+                <AvatarFallback className="bg-secondary/50 text-foreground">
+                  <User className="h-5 w-5" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="bg-primary text-primary-foreground p-4 rounded-2xl rounded-tr-sm shadow-sm">
+                <p className="text-sm">Can you help me find someone working at Vercel in San Francisco?</p>
+              </div>
+            </div>
+
+            {/* AI Response */}
+            <div className="flex items-start gap-4">
+              <Avatar className="h-10 w-10 border border-primary/20 shrink-0">
+                <AvatarFallback className="bg-primary/10 text-primary">
+                  <Bot className="h-5 w-5" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="bg-muted/30 border border-border p-4 rounded-2xl rounded-tl-sm shadow-sm w-full">
+                <p className="text-sm mb-3">
+                  I found a few alumni working at Vercel in the San Francisco area:
+                </p>
+                
+                <div className="space-y-3 mb-3">
+                  <div className="flex items-center justify-between p-3 bg-background border border-border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback className="bg-primary/10 text-primary text-xs">WW</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="text-sm font-semibold">Wade Warren</p>
+                        <p className="text-xs text-muted-foreground">Frontend Developer</p>
+                      </div>
+                    </div>
+                    <Button size="sm" variant="outline" className="h-7 text-xs">View Profile</Button>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 bg-background border border-border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback className="bg-primary/10 text-primary text-xs">IN</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="text-sm font-semibold">Isabella Nguyen</p>
+                        <p className="text-xs text-muted-foreground">UX Designer</p>
+                      </div>
+                    </div>
+                    <Button size="sm" variant="outline" className="h-7 text-xs">View Profile</Button>
+                  </div>
+                </div>
+
+                <p className="text-sm text-muted-foreground">
+                  Would you like me to draft an introduction message for you?
+                </p>
+              </div>
+            </div>
+            
+            {/* Thinking indicator could go here */}
+            
+          </div>
+        </ScrollArea>
 
         {/* Input Area */}
-        <div className="p-8 bg-white dark:bg-slate-950 border-t border-[#c7c4d8]/10">
-          <div className="relative max-w-4xl mx-auto group">
-            <textarea 
-              className="w-full bg-surface-container-low border-none rounded-[1.5rem] p-5 pr-16 text-sm focus:ring-4 focus:ring-primary-container/10 placeholder:text-slate-400 resize-none no-scrollbar h-16 shadow-inner transition-all group-focus-within:bg-white border-transparent focus:border-primary-container/20 group-focus-within:ring-primary-container/10" 
-              placeholder="Type your message to the network assistant..." 
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyDown={handleKeyPress}
-              rows={1}
-            ></textarea>
-            <button 
-              onClick={handleSendMessage}
-              disabled={!message.trim() || isLoading}
-              className="absolute right-3 bottom-3 w-10 h-10 bg-primary-container text-white rounded-xl shadow-lg shadow-primary-container/20 flex items-center justify-center transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
-            >
-              <span className="material-symbols-outlined text-xl">send</span>
-            </button>
+        <div className="p-4 border-t border-border bg-muted/10">
+          <div className="max-w-3xl mx-auto relative flex items-end">
+            <Input 
+              placeholder="Type your message..." 
+              className="pr-12 h-12 bg-background border-border shadow-sm focus-visible:ring-primary/50 text-base"
+            />
+            <Button size="icon" className="absolute right-1 top-1 bottom-1 h-10 w-10 rounded-md bg-primary hover:bg-primary/90">
+              <Send className="h-4 w-4" />
+            </Button>
           </div>
-          <div className="mt-4 flex items-center justify-center gap-6">
-             <div className="flex items-center gap-2 opacity-50">
-                <span className="material-symbols-outlined text-xs">shield_lock</span>
-                <span className="text-[10px] font-bold uppercase tracking-tighter">Private Data Room</span>
-             </div>
-             <div className="flex items-center gap-2 opacity-50">
-                <span className="material-symbols-outlined text-xs">history</span>
-                <span className="text-[10px] font-bold uppercase tracking-tighter">Session Context Active</span>
-             </div>
+          <div className="max-w-3xl mx-auto text-center mt-2">
+            <p className="text-[10px] text-muted-foreground">AI can make mistakes. Consider verifying important information.</p>
           </div>
         </div>
-      </div>
+      </Card>
     </div>
   );
-};
+}

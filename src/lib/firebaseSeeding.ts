@@ -30,18 +30,18 @@ export const seedTestUsers = async () => {
         });
 
         results.push({ role, success: true });
-      } catch (authError: any) {
-        if (authError.code === 'auth/email-already-in-use') {
-          // If user exists, we don't necessarily need to update Firestore here for safety, 
-          // but we could if we wanted to enforce roles.
-          results.push({ role, success: true }); 
+      } catch (authError: unknown) {
+        const maybe = authError as { code?: string };
+        if (maybe.code === "auth/email-already-in-use") {
+          results.push({ role, success: true });
         } else {
           throw authError;
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`Error seeding ${role}:`, error);
-      results.push({ role, success: false, error: error.message });
+      const message = error instanceof Error ? error.message : String(error);
+      results.push({ role, success: false, error: message });
     }
   }
 

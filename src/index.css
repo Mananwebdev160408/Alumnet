@@ -2,98 +2,100 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Alumnet Design System - Old Japanese Sakura Style
-Colors:
-- Washi (Background): #F7F3E9
-- Sumi Ink (Text/Borders): #1A1A1A
-- Sakura Pink: #FFB7C5
-- Hinomaru Red: #BC002D
-- Moss Green: #4A5D23
+/* Swiss-inspired color system defined as CSS variables.
+   All colors are referenced via CSS variables (no hardcoded colors in components).
+   Palette provided by user mapped to design tokens used by Tailwind config.
+   Colors (hex):
+   - #A83048 (primary)
+   - #302424 (foreground / ink)
+   - #D8A8A8 (muted)
+   - #F0CCCC (secondary)
+   - #CC9C60 (accent)
+   - #F0CC9C (accent-light)
+   - #E4D8C0 (background)
 */
 
 @layer base {
   :root {
-    --background: 45 33% 94%;
-    --foreground: 0 0% 10%;
-    
-    --primary: 346 100% 37%;
-    --primary-foreground: 45 33% 94%;
-    
-    --secondary: 348 100% 86%;
-    --secondary-foreground: 0 0% 10%;
-    
-    --accent: 80 45% 25%;
-    --accent-foreground: 45 33% 94%;
-    
-    --muted: 42 21% 86%;
-    --muted-foreground: 0 0% 30%;
-    
-    --border: 0 0% 10%;
-    --input: 0 0% 10%;
-    --ring: 346 100% 37%;
-    
-    --card: 40 60% 98%;
-    --card-foreground: 0 0% 10%;
-    
-    --popover: 40 60% 98%;
-    --popover-foreground: 0 0% 10%;
+    /* Core Swiss Theme Tokens */
+    --background: 41 40% 96%; /* Lighter, cleaner background */
+    --foreground: 0 14% 16%; /* #302424 */
 
-    --surface: 45 33% 94%;
-    --on-surface: 0 0% 10%;
+    --card: 0 0% 100%; /* Pure white cards for SaaS look */
+    --card-foreground: 0 14% 16%;
 
-    /* Material-like aliases mapped to Sakura palette for secured routes */
-    --surface-container-lowest: hsl(45 33% 96%);
-    --surface-container-low: hsl(42 26% 91%);
-    --surface-container: hsl(42 24% 88%);
-    --surface-container-high: hsl(41 21% 84%);
-    --surface-container-highest: hsl(41 20% 80%);
-    --on-surface-variant: hsl(0 0% 30%);
-    --primary-container: hsl(346 72% 46%);
-    --secondary-container: hsl(348 100% 86%);
-    --error: 0 78% 44%;
-    --error-foreground: 45 33% 96%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 14% 16%;
+
+    /* Primary (#A83048) */
+    --primary: 348 56% 42%; 
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary (#F0CCCC) */
+    --secondary: 0 55% 87%; 
+    --secondary-foreground: 0 14% 16%;
+
+    /* Muted (#D8A8A8) */
+    --muted: 0 38% 75%; 
+    --muted-foreground: 0 14% 40%;
+
+    /* Accent (#CC9C60) and Accent Light (#F0CC9C) */
+    --accent: 33 51% 59%; 
+    --accent-foreground: 0 14% 16%;
+    --accent-light: 34 74% 78%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 14% 16%; /* #302424 */
+    --input: 0 14% 16%;
+    --ring: 348 56% 42%;
+
+    --radius: 0.5rem;
+    
+    --shadow-soft: 0 6px 18px rgba(16,16,16,0.06);
+    --shadow-medium: 0 8px 28px rgba(16,16,16,0.08);
+    --shadow-strong: 0 12px 40px rgba(16,16,16,0.12);
+
+    /* Auth Page specific variables to match RegisterOrg.tsx */
+    --charcoal: #161616; /* Dark black/gray */
+    --grid-line: rgba(255, 255, 255, 0.05);
+    --icon-bg-dark: rgba(0, 0, 0, 0.3);
+    --icon-border-dark: rgba(255, 255, 255, 0.1);
+    --panel-dark: #221013; /* Darker red-tinted black for panels */
+    --light-bg: #faf8f4; /* Mapped to RegisterOrg right side background */
   }
 
   .dark {
-    --background: 0 0% 6%;
-    --foreground: 45 33% 94%;
-    
-    --primary: 346 100% 55%;
-    --primary-foreground: 0 0% 6%;
-    
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 45 33% 94%;
-    
-    --accent: 80 45% 45%;
-    --accent-foreground: 45 33% 94%;
-    
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 70%;
-    
-    --border: 0 0% 25%;
-    --input: 0 0% 25%;
-    --ring: 346 100% 55%;
-    
-    --card: 0 0% 8%;
-    --card-foreground: 45 33% 94%;
-    
-    --popover: 0 0% 8%;
-    --popover-foreground: 45 33% 94%;
+    /* Muted darker version of the same palette for dark mode */
+    --background: 0 14% 8%; 
+    --foreground: 41 40% 92%;
 
-    --surface: 0 0% 6%;
-    --on-surface: 45 33% 94%;
+    --card: 0 14% 12%;
+    --card-foreground: 41 40% 92%;
 
-    /* Material-like aliases mapped to Sakura dark palette for secured routes */
-    --surface-container-lowest: hsl(0 0% 7%);
-    --surface-container-low: hsl(0 0% 10%);
-    --surface-container: hsl(0 0% 13%);
-    --surface-container-high: hsl(0 0% 16%);
-    --surface-container-highest: hsl(0 0% 20%);
-    --on-surface-variant: hsl(0 0% 74%);
-    --primary-container: hsl(346 70% 58%);
-    --secondary-container: hsl(0 0% 12%);
-    --error: 0 75% 56%;
-    --error-foreground: 0 0% 8%;
+    --popover: 0 14% 12%;
+    --popover-foreground: 41 40% 92%;
+
+    --primary: 348 56% 42%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 55% 20%;
+    --secondary-foreground: 41 40% 92%;
+
+    --muted: 0 38% 25%;
+    --muted-foreground: 0 14% 70%;
+
+    --accent: 33 51% 49%;
+    --accent-foreground: 0 14% 12%;
+    --accent-light: 34 74% 28%;
+
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 41 40% 92%;
+
+    --border: 0 14% 25%;
+    --input: 0 14% 25%;
+    --ring: 348 56% 42%;
   }
 
   * {
@@ -102,82 +104,28 @@ Colors:
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Noto Serif JP', serif;
+    font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Noto Serif JP', serif;
-    font-weight: 700;
+  h1,h2,h3,h4,h5,h6 {
+    @apply font-display font-bold text-foreground;
   }
 }
 
 @layer components {
-  .japanese-card {
-    @apply bg-card border-2 border-border p-6 relative;
-    box-shadow: 4px 4px 0px 0px #1A1A1A;
+  /* Minimal, neutral utility classes for Swiss design */
+  .brand-btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-none border-2 py-2 px-4 text-sm font-semibold;
   }
 
-  .sakura-glow {
-    text-shadow: 0 0 10px rgba(255, 183, 197, 0.5);
+  .card-elevated {
+    @apply bg-card text-card-foreground border-2 border-border shadow-soft rounded-none p-6;
   }
 
-  .sumi-border {
-    border: 2px solid #1A1A1A;
-  }
-
-  .washi-texture {
-    background-image: url('/washi_paper_texture.png');
-    background-repeat: repeat;
-    @apply dark:opacity-[0.05] dark:invert;
-  }
-
-  .mountain-bg {
-    background-image: url('/japanese_sakura_mountains_sketch.png');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    @apply dark:opacity-[0.08] dark:invert;
-  }
-
-  .ink-panel {
-    @apply border-2 border-border bg-card/90;
-    box-shadow: 10px 10px 0 0 rgba(26, 26, 26, 0.08);
-  }
-
-  .ink-field {
-    @apply border-2 border-border bg-background/90 rounded-none;
-  }
-
-  .ink-label {
-    @apply text-[10px] font-black uppercase tracking-[0.32em] text-foreground/55;
-  }
+  .muted-text { @apply text-muted-foreground; }
 }
 
 @layer utilities {
-  .writing-vertical {
-    writing-mode: vertical-rl;
-  }
-  
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-}
-
-@keyframes fall {
-  0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
-  100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
-}
-
-.sakura-petal {
-  position: fixed;
-  top: -10px;
-  background-color: #FFB7C5;
-  border-radius: 10px 0 10px 10px;
-  pointer-events: none;
-  z-index: 100;
-  animation: fall linear infinite;
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }

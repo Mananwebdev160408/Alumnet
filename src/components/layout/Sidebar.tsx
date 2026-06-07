@@ -4,106 +4,100 @@ import { motion } from "framer-motion";
 import { 
   LayoutDashboard, 
   Users, 
-  GraduationCap, 
-  Network, 
-  MessageSquare, 
-  Sparkles,
   User,
+  GraduationCap, 
+  Briefcase, 
+  MessageSquare, 
+  UsersRound,
+  ShieldAlert,
   Settings,
-  Flower
+  PlusSquare
 } from "lucide-react";
-import { ThemeToggle } from "./ThemeToggle";
-
-const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Directory", href: "/directory", icon: Users },
-  { name: "Mentors", href: "/mentorship", icon: GraduationCap },
-  { name: "Connections", href: "/connections", icon: Network },
-  { name: "Messages", href: "/messages", icon: MessageSquare },
-  { name: "AI Advisor", href: "/ai-chat", icon: Sparkles },
-];
-
-const footerNavigation = [
-  { name: "Profile", href: "/profile", icon: User },
-  { name: "Settings", href: "/settings", icon: Settings },
-];
 
 export const Sidebar = () => {
   const location = useLocation();
 
-  if (location.pathname === '/' || location.pathname.startsWith('/auth')) {
-    return null;
-  }
+  if (location.pathname === '/' || location.pathname.startsWith('/auth')) return null;
+
+  const navigation = [
+    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { name: "Directory", href: "/directory", icon: Users },
+    { name: "Profile", href: "/profile", icon: User },
+    { name: "Mentorship", href: "/mentorship", icon: GraduationCap },
+    { name: "Referrals", href: "/referrals", icon: Briefcase },
+    { name: "Messages", href: "/messages", icon: MessageSquare },
+    { name: "Community", href: "/community", icon: UsersRound },
+  ];
+
+  const bottomNavigation = [
+    { name: "Admin", href: "/admin", icon: ShieldAlert },
+    { name: "Settings", href: "/settings", icon: Settings },
+  ];
 
   return (
-    <aside className="h-screen w-64 fixed left-0 top-0 overflow-y-auto bg-foreground text-[#F7F3E9] flex flex-col p-6 gap-4 z-50 border-r-2 border-border relative">
-      <div className="absolute inset-0 washi-texture opacity-5 pointer-events-none" />
-      
-      <div className="flex items-center gap-4 mb-10 relative z-10">
-        <div className="size-10 border-2 border-[#F7F3E9] bg-primary flex items-center justify-center rotate-45 shadow-[4px_4px_0px_0px_rgba(255,183,197,0.3)]">
-          <Flower className="size-6 text-white -rotate-45" />
-        </div>
-        <div>
-          <h1 className="text-xl font-bold tracking-tighter uppercase font-serif">AlumNet</h1>
-          <p className="text-[10px] uppercase tracking-widest text-secondary font-bold opacity-80">Lineage Network</p>
-        </div>
+    <aside className="h-screen w-64 fixed left-0 top-0 overflow-y-auto bg-surface border-r border-border flex flex-col z-50">
+      <div className="h-20 flex items-center px-6 border-b border-border">
+        <Link to="/dashboard" className="flex items-center gap-3">
+          <div className="w-8 h-8 border border-border flex items-center justify-center">
+            <PlusSquare className="size-4 text-primary" />
+          </div>
+          <span className="font-display font-bold tracking-widest text-foreground uppercase text-sm">AlumNet</span>
+        </Link>
       </div>
-      
-      <nav className="flex-1 flex flex-col gap-2 relative z-10">
-        {navigation.map((item) => {
-          const isActive = location.pathname === item.href;
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.name}
-              to={item.href}
-              className={cn(
-                "flex items-center gap-4 px-4 py-3 transition-all duration-300 relative group",
-                isActive
-                  ? "text-primary font-bold bg-[#F7F3E9]/10"
-                  : "text-[#F7F3E9]/60 hover:text-secondary hover:bg-white/5"
-              )}
-            >
-              {isActive && (
-                <motion.div 
-                  layoutId="active-nav"
-                  className="absolute left-0 w-1 h-full bg-primary"
-                />
-              )}
-              <Icon className={cn("size-5 transition-transform group-hover:scale-110", isActive ? "text-primary" : "text-inherit")} />
-              <span className="text-sm uppercase tracking-widest font-bold">{item.name}</span>
-            </Link>
-          );
-        })}
+
+      <nav className="flex-1 flex flex-col py-6">
+        <div className="space-y-1">
+          {navigation.map((item) => {
+            const isActive = location.pathname.startsWith(item.href);
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.name}
+                to={item.href}
+                className={cn(
+                  "flex items-center gap-4 px-6 py-3 transition-colors relative group",
+                  isActive ? "text-primary bg-primary/10 font-bold" : "text-muted-foreground hover:text-foreground hover:bg-popover font-medium"
+                )}
+              >
+                {isActive && <motion.div layoutId="active-nav" className="absolute left-0 w-1 h-full bg-primary" />}
+                <Icon className={cn("size-4", isActive ? "text-primary" : "text-inherit")} />
+                <span className="text-xs uppercase tracking-widest">{item.name}</span>
+                {item.name === "Messages" && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />}
+              </Link>
+            );
+          })}
+        </div>
+
+        <div className="mt-8 space-y-1">
+          {bottomNavigation.map((item) => {
+            const isActive = location.pathname.startsWith(item.href);
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.name}
+                to={item.href}
+                className={cn(
+                  "flex items-center gap-4 px-6 py-3 transition-colors relative group",
+                  isActive ? "text-primary bg-primary/10 font-bold" : "text-muted-foreground hover:text-foreground hover:bg-popover font-medium"
+                )}
+              >
+                {isActive && <motion.div layoutId="active-sidebar-bottom" className="absolute left-0 w-1 h-full bg-primary" />}
+                <Icon className={cn("size-4", isActive ? "text-primary" : "text-inherit")} />
+                <span className="text-xs uppercase tracking-widest">{item.name}</span>
+              </Link>
+            );
+          })}
+        </div>
       </nav>
 
-      <div className="mt-auto flex flex-col gap-2 pt-6 border-t border-[#F7F3E9]/10 relative z-10">
-        {footerNavigation.map((item) => {
-          const isActive = location.pathname === item.href;
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.name}
-              to={item.href}
-              className={cn(
-                "flex items-center gap-4 px-4 py-3 transition-all duration-300 relative group",
-                isActive
-                  ? "text-primary font-bold bg-[#F7F3E9]/10"
-                  : "text-[#F7F3E9]/60 hover:text-secondary hover:bg-white/5"
-              )}
-            >
-              <Icon className={cn("size-5", isActive ? "text-primary" : "text-inherit")} />
-              <span className="text-sm uppercase tracking-widest font-bold">{item.name}</span>
-            </Link>
-          );
-        })}
-        <div className="px-4 py-3 mt-4">
-          <ThemeToggle />
+      <div className="p-6 border-t border-border mt-auto">
+        <div className="flex items-center gap-3">
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=SarahChen" alt="User" className="w-8 h-8 rounded-full bg-card border border-border" />
+          <div className="flex-1 min-w-0">
+            <div className="text-xs font-bold text-foreground truncate">Sarah Chen</div>
+            <div className="text-[10px] text-muted-foreground truncate uppercase tracking-wider">Product Manager</div>
+          </div>
         </div>
-      </div>
-
-      <div className="absolute right-4 bottom-12 writing-vertical text-[10px] font-bold text-[#F7F3E9]/20 uppercase tracking-[0.5em] pointer-events-none italic">
-        令和六年 • 結び
       </div>
     </aside>
   );

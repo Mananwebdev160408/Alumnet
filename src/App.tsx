@@ -8,15 +8,22 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-route
 import { Layout } from "./components/layout/Layout";
 
 // Pages
-import { Dashboard } from "./pages/Dashboard";
-import { Profile } from "./pages/Profile";
-import { Directory } from "./pages/Directory";
-import { Connections } from "./pages/Connections";
-import { Messages } from "./pages/Messages";
-import { Mentorship } from "./pages/Mentorship";
-import { AIChat } from "./pages/AIChat";
-import { About } from "./pages/About";
-import { Settings } from "./pages/Settings";
+import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/Profile";
+import Directory from "./pages/Directory";
+import Connections from "./pages/Connections";
+import Messages from "./pages/Messages";
+import Mentorship from "./pages/Mentorship";
+import AIChat from "./pages/AIChat";
+import About from "./pages/About";
+import Settings from "./pages/Settings";
+
+// Role-specific pages
+import OrgDashboard from "./pages/roles/OrgDashboard";
+import ManageAlumni from "./pages/roles/ManageAlumni";
+import OrgEvents from "./pages/roles/OrgEvents";
+import AdminDashboard from "./pages/roles/AdminDashboard";
+import ManageOrgs from "./pages/roles/ManageOrgs";
 
 // Auth pages
 import { Login } from "./pages/auth/Login";
@@ -25,13 +32,9 @@ import { RegisterOrg } from "./pages/auth/RegisterOrg";
 import NotFound from "./pages/NotFound";
 import AlumnetProfilePage from "./pages/AlumniProfile";
 import Index from "./pages/Index";
-import { Apply } from "./pages/Apply";
-import { SuperAdminDashboard } from "./pages/SuperAdminDashboard";
-import { CollegeAdminDashboard } from "./pages/CollegeAdminDashboard";
-import { SuperAdminColleges } from "./pages/SuperAdminColleges";
-import { AdminUsers } from "./pages/AdminUsers";
+import Apply from "./pages/Apply";
 import LandingPage from "./pages/LandingPage";
-
+import Referrals from "./pages/Referrals";
 import { AuthProvider } from "./lib/AuthContext";
 import { useAuth } from "./lib/AuthContext";
 import { ThemeProvider } from "./components/theme-provider";
@@ -79,16 +82,21 @@ const App = () => (
               <Route path="/" element={<LandingPage />} />
               <Route path="/apply" element={<Apply />} />
               
+              {/* Org Routes */}
+              <Route path="/org/dashboard" element={<ProtectedRoute><OrgDashboard /></ProtectedRoute>} />
+              <Route path="/org/alumni" element={<ProtectedRoute><ManageAlumni /></ProtectedRoute>} />
+              <Route path="/org/events" element={<ProtectedRoute><OrgEvents /></ProtectedRoute>} />
+
               {/* Admin Routes */}
-              <Route path="/admin/global" element={<ProtectedRoute><SuperAdminDashboard /></ProtectedRoute>} />
-              <Route path="/admin/global/colleges" element={<ProtectedRoute><SuperAdminColleges /></ProtectedRoute>} />
-              <Route path="/admin/college" element={<ProtectedRoute><CollegeAdminDashboard /></ProtectedRoute>} />
-              <Route path="/admin/college/users" element={<ProtectedRoute><AdminUsers /></ProtectedRoute>} />
+              <Route path="/admin/dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+              <Route path="/admin/organizations" element={<ProtectedRoute><ManageOrgs /></ProtectedRoute>} />
+              <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
 
               <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
               <Route path="/alumni/:id" element={<ProtectedRoute><AlumnetProfilePage/></ProtectedRoute>}/>
-              <Route path="/connections" element={<ProtectedRoute><Connections /></ProtectedRoute>} />
+               <Route path="/connections" element={<ProtectedRoute><Connections /></ProtectedRoute>} />
               <Route path="/mentorship" element={<ProtectedRoute><Mentorship /></ProtectedRoute>} />
+              <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
               
               {/* Auth Routes */}
               <Route path="/auth/login" element={<Login />} />

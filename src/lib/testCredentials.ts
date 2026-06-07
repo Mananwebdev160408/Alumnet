@@ -3,7 +3,7 @@ export const TEST_CREDENTIALS = {
     email: "admin@alumnet.com",
     password: "admin123",
     label: "Super Admin",
-    role: "superadmin",
+    role: "super_admin",
     description: "Global site administration and node management",
     name: "SysAdmin Zero"
   },
@@ -11,7 +11,7 @@ export const TEST_CREDENTIALS = {
     email: "iitd_admin@alumnet.com",
     password: "admin123",
     label: "College Admin",
-    role: "collegeadmin",
+    role: "college_admin",
     description: "Institutional management for IIT Delhi",
     name: "Registrar Alpha"
   },

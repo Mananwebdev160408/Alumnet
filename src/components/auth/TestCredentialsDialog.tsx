@@ -42,10 +42,11 @@ export const TestCredentialsDialog = ({ onSelect, isOpen = false }: TestCredenti
         title: "Test records synced",
         description: `Successfully etched ${successCount} node(s) into the archive.`,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       toast({
         title: "Seeding failed",
-        description: error.message || "The lineage records could not be initialized.",
+        description: message || "The lineage records could not be initialized.",
         variant: "destructive",
       });
     } finally {

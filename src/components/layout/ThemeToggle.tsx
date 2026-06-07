@@ -11,7 +11,7 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-      className="relative size-10 rounded-none border-2 border-border bg-white dark:bg-card hover:bg-secondary/20 transition-all shadow-[4px_4px_0px_0px_#1A1A1A] group overflow-hidden"
+      className="relative size-10 rounded-none border-2 border-border bg-white dark:bg-card hover:bg-secondary/20 transition-all shadow-strong group overflow-hidden"
     >
       <motion.div
         initial={false}

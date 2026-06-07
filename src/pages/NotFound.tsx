@@ -1,41 +1,27 @@
-import { useLocation, Link } from "react-router-dom";
-import { useEffect } from "react";
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { SearchX, Home } from "lucide-react";
 
-const NotFound = () => {
-  const location = useLocation();
-
-  useEffect(() => {
-    console.error("404 Error: Protocol breakdown at:", location.pathname);
-  }, [location.pathname]);
-
+export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface-container-low p-6 text-center">
-      <div className="space-y-8 max-w-md">
-        <div className="w-24 h-24 bg-white rounded-[2rem] shadow-xl flex items-center justify-center mx-auto mb-10 group cursor-help">
-           <span className="material-symbols-outlined text-error text-5xl font-black group-hover:rotate-12 transition-transform">error</span>
+    <div className="flex-1 flex items-center justify-center min-h-[calc(100vh-10rem)] p-8">
+      <div className="text-center space-y-6 max-w-md">
+        <div className="mx-auto w-24 h-24 bg-muted/50 rounded-full flex items-center justify-center mb-8 border border-border shadow-sm">
+          <SearchX className="h-10 w-10 text-muted-foreground" />
         </div>
-        
-        <div className="space-y-3">
-          <h1 className="text-6xl font-black text-on-surface tracking-tighter">404</h1>
-          <p className="text-sm font-black text-on-surface-variant/40 uppercase tracking-[0.4em]">Node Not Found</p>
-        </div>
-
-        <p className="text-xs font-medium text-on-surface-variant leading-relaxed opacity-60 uppercase tracking-tight">
-          The network endpoint <span className="text-primary font-black italic">{location.pathname}</span> does not exist or has been decommissioned.
+        <h1 className="text-4xl font-extrabold tracking-tight">Page Not Found</h1>
+        <p className="text-muted-foreground text-lg">
+          The page you are looking for doesn't exist or has been moved. Let's get you back on track.
         </p>
-
-        <Link to="/">
-          <button className="mt-6 px-10 py-4 bg-primary-container text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-primary-container/20 hover:scale-[1.05] active:scale-95 transition-all">
-            Return to Core
-          </button>
-        </Link>
-        
-        <div className="pt-10">
-           <p className="text-[9px] font-black text-on-surface-variant/20 uppercase tracking-[0.5em]">Protocol Fault // Sync Interrupted</p>
+        <div className="pt-4 flex justify-center gap-4">
+          <Button asChild size="lg" className="px-8">
+            <Link to="/dashboard">
+              <Home className="mr-2 h-4 w-4" /> Return to Dashboard
+            </Link>
+          </Button>
         </div>
       </div>
     </div>
   );
-};
-
-export default NotFound;
+}
