@@ -18,6 +18,9 @@ import {
   Scroll,
   Sparkles,
 } from "lucide-react";
+import { auth } from "@/lib/firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 
 interface TestCredentialsDialogProps {
   onSelect: (email: string, password: string) => void;
@@ -28,6 +31,7 @@ export const TestCredentialsDialog = ({ onSelect, isOpen = false }: TestCredenti
   const [open, setOpen] = useState(isOpen);
   const [isSeeding, setIsSeeding] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     setOpen(isOpen);
@@ -38,10 +42,17 @@ export const TestCredentialsDialog = ({ onSelect, isOpen = false }: TestCredenti
     try {
       const results = await seedTestUsers();
       const successCount = results.filter((result) => result.success).length;
+      
+      // Auto-login with student account after seeding
+      const studentCreds = TEST_CREDENTIALS.student;
+      await signInWithEmailAndPassword(auth, studentCreds.email, studentCreds.password);
+      
       toast({
-        title: "Test records synced",
-        description: `Successfully etched ${successCount} node(s) into the archive.`,
+        title: "Test records synced & Logged In",
+        description: `Successfully etched ${successCount} node(s) into the archive. Authenticated as ${studentCreds.name} (${studentCreds.label}).`,
       });
+      setOpen(false);
+      navigate("/dashboard");
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       toast({

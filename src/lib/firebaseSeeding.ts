@@ -3,32 +3,16 @@ import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "./firebase";
 import { TEST_CREDENTIALS } from "./testCredentials";
 
+// Flag to prevent the Login page's auth-state useEffect from redirecting
+// to the dashboard while seeding is in progress (seeding signs in/out repeatedly).
+export let isSeedingInProgress = false;
+
 export const seedTestUsers = async () => {
+  isSeedingInProgress = true;
   const results: { role: string; success: boolean; error?: string }[] = [];
   const uids: Record<string, string> = {};
 
-  // 1. Seed Colleges Collection
-  const collegesList = [
-    { id: "iit-delhi", name: "IIT Delhi", shortName: "IITD", website: "https://www.iitd.ac.in", domain: "iitd.ac.in", country: "India", cityState: "New Delhi", description: "Premier engineering institute in India.", status: "active", subscriptionTier: "premium" },
-    { id: "global-university", name: "Global University", shortName: "GU", website: "https://www.global.edu", domain: "global.edu", country: "United States", cityState: "New York, NY", description: "A top global research university.", status: "active", subscriptionTier: "enterprise" },
-    { id: "mit", name: "MIT", shortName: "MIT", website: "https://www.mit.edu", domain: "mit.edu", country: "United States", cityState: "Cambridge, MA", description: "Massachusetts Institute of Technology.", status: "active", subscriptionTier: "enterprise" },
-    { id: "stanford", name: "Stanford", shortName: "Stanford", website: "https://www.stanford.edu", domain: "stanford.edu", country: "United States", cityState: "Stanford, CA", description: "Stanford University.", status: "active", subscriptionTier: "enterprise" },
-    { id: "imperial", name: "Imperial Academy", shortName: "IAT", website: "https://www.imperial.edu", domain: "imperial.edu", country: "United Kingdom", cityState: "London, England", description: "Imperial Academy of Technology.", status: "active", subscriptionTier: "premium" },
-    { id: "nus", name: "NUS", shortName: "NUS", website: "https://www.nus.edu.sg", domain: "nus.edu.sg", country: "Singapore", cityState: "Singapore", description: "National University of Singapore.", status: "active", subscriptionTier: "premium" }
-  ];
-
-  for (const col of collegesList) {
-    try {
-      await setDoc(doc(db, "colleges", col.id), {
-        ...col,
-        createdAt: new Date()
-      });
-    } catch (err) {
-      console.error(`Error seeding college ${col.id}:`, err);
-    }
-  }
-
-  // 2. Seed Primary Test Users
+  // 1. Seed Primary Test Users (Auth accounts + Profiles)
   for (const role in TEST_CREDENTIALS) {
     const creds = TEST_CREDENTIALS[role as keyof typeof TEST_CREDENTIALS];
     try {
@@ -47,7 +31,7 @@ export const seedTestUsers = async () => {
 
       uids[role] = user.uid;
 
-      // Seed core profile in Firestore
+      // Seed core profile in Firestore (User writes their own document)
       const isAlumni = role === "alumni";
       const isStudent = role === "student";
       const isCollegeAdmin = role === "collegeadmin";
@@ -89,7 +73,36 @@ export const seedTestUsers = async () => {
     }
   }
 
-  // 3. Seed Secondary Mock Users (Directly into Firestore)
+  // 2. Sign back in as Super Admin to write global/other collections (colleges, mock users, connections, sessions, referrals, etc.)
+  const superadminCreds = TEST_CREDENTIALS.superadmin;
+  try {
+    await signInWithEmailAndPassword(auth, superadminCreds.email, superadminCreds.password);
+  } catch (err) {
+    console.error("Error signing back in as superadmin for global seeding:", err);
+  }
+
+  // 3. Seed Colleges Collection (authenticated as Super Admin)
+  const collegesList = [
+    { id: "iit-delhi", name: "IIT Delhi", shortName: "IITD", website: "https://www.iitd.ac.in", domain: "iitd.ac.in", country: "India", cityState: "New Delhi", description: "Premier engineering institute in India.", status: "active", subscriptionTier: "premium" },
+    { id: "global-university", name: "Global University", shortName: "GU", website: "https://www.global.edu", domain: "global.edu", country: "United States", cityState: "New York, NY", description: "A top global research university.", status: "active", subscriptionTier: "enterprise" },
+    { id: "mit", name: "MIT", shortName: "MIT", website: "https://www.mit.edu", domain: "mit.edu", country: "United States", cityState: "Cambridge, MA", description: "Massachusetts Institute of Technology.", status: "active", subscriptionTier: "enterprise" },
+    { id: "stanford", name: "Stanford", shortName: "Stanford", website: "https://www.stanford.edu", domain: "stanford.edu", country: "United States", cityState: "Stanford, CA", description: "Stanford University.", status: "active", subscriptionTier: "enterprise" },
+    { id: "imperial", name: "Imperial Academy", shortName: "IAT", website: "https://www.imperial.edu", domain: "imperial.edu", country: "United Kingdom", cityState: "London, England", description: "Imperial Academy of Technology.", status: "active", subscriptionTier: "premium" },
+    { id: "nus", name: "NUS", shortName: "NUS", website: "https://www.nus.edu.sg", domain: "nus.edu.sg", country: "Singapore", cityState: "Singapore", description: "National University of Singapore.", status: "active", subscriptionTier: "premium" }
+  ];
+
+  for (const col of collegesList) {
+    try {
+      await setDoc(doc(db, "colleges", col.id), {
+        ...col,
+        createdAt: new Date()
+      });
+    } catch (err) {
+      console.error(`Error seeding college ${col.id}:`, err);
+    }
+  }
+
+  // 4. Seed Secondary Mock Users (Directly into Firestore)
   const mockUsersList = [
     { uid: "mock-alumni-wade", name: "Wade Warren", email: "wade@alumnet.com", role: "alumni", college: "Global University", collegeId: "global-university", branch: "Computer Science", graduationYear: 2019, verified: true, isVerified: true, company: "Vercel", occupation: "Frontend Engineer", location: "San Francisco, CA", bio: "Frontend wizard at Vercel. Love discussing Next.js, web performance, and CSS architectures.", skills: ["React", "Next.js", "Tailwind CSS", "Webpack"], isMentor: true, openToMentor: true, openToRefer: true },
     { uid: "mock-alumni-eleanor", name: "Eleanor Pena", email: "eleanor@alumnet.com", role: "alumni", college: "Global University", collegeId: "global-university", branch: "Product Design", graduationYear: 2018, verified: true, isVerified: true, company: "Figma", occupation: "Product Designer", location: "New York, NY", bio: "Product Designer at Figma. Focused on UI libraries, Figma plugins, and visual design assets.", skills: ["UI/UX", "Figma", "Design Systems", "Prototyping"], isMentor: true, openToMentor: true, openToRefer: true },
@@ -241,6 +254,7 @@ export const seedTestUsers = async () => {
 
   // Cleanup: Sign out to let the user log in normally
   await signOut(auth);
+  isSeedingInProgress = false;
   
   return results;
 };

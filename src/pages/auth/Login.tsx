@@ -5,6 +5,7 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { collection, getDocs } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import { TestCredentialsDialog } from "@/components/auth/TestCredentialsDialog";
+import { isSeedingInProgress } from "@/lib/firebaseSeeding";
 import {
   Building2,
   Mail,
@@ -85,8 +86,10 @@ export function Login() {
   const [keepSignedIn, setKeepSignedIn] = useState(true);
 
   // Auto-redirect authenticated users to appropriate dashboard
+  // Skip redirect if seeding is currently in progress (seeding triggers
+  // multiple sign-in/sign-out cycles that would incorrectly navigate away).
   useEffect(() => {
-    if (!authLoading && currentUser && userRole) {
+    if (!authLoading && currentUser && userRole && !isSeedingInProgress) {
       if (userRole === "super_admin") {
         navigate("/admin/dashboard");
       } else if (userRole === "college_admin") {
