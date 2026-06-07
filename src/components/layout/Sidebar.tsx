@@ -11,28 +11,71 @@ import {
   UsersRound,
   ShieldAlert,
   Settings,
-  PlusSquare
+  PlusSquare,
+  Building2,
+  Calendar
 } from "lucide-react";
+import { useAuth } from "@/lib/AuthContext";
 
 export const Sidebar = () => {
   const location = useLocation();
+  const { userRole, currentUser } = useAuth();
 
   if (location.pathname === '/' || location.pathname.startsWith('/auth')) return null;
 
-  const navigation = [
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Directory", href: "/directory", icon: Users },
-    { name: "Profile", href: "/profile", icon: User },
-    { name: "Mentorship", href: "/mentorship", icon: GraduationCap },
-    { name: "Referrals", href: "/referrals", icon: Briefcase },
-    { name: "Messages", href: "/messages", icon: MessageSquare },
-    { name: "Community", href: "/community", icon: UsersRound },
-  ];
-
+  let navigation = [];
   const bottomNavigation = [
-    { name: "Admin", href: "/admin", icon: ShieldAlert },
     { name: "Settings", href: "/settings", icon: Settings },
   ];
+
+  if (userRole === "student") {
+    navigation = [
+      { name: "Dashboard", href: "/student/dashboard", icon: LayoutDashboard },
+      { name: "Directory", href: "/student/alumni", icon: Users },
+      { name: "Connections", href: "/student/connections", icon: UsersRound },
+      { name: "Mentorship", href: "/student/mentorship", icon: GraduationCap },
+      { name: "Referrals", href: "/student/referrals", icon: Briefcase },
+      { name: "Job Board", href: "/student/jobs", icon: Briefcase },
+      { name: "Events", href: "/student/events", icon: Calendar },
+      { name: "Messages", href: "/student/messages", icon: MessageSquare },
+      { name: "Profile", href: "/student/profile", icon: User },
+    ];
+  } else if (userRole === "alumni") {
+    navigation = [
+      { name: "Dashboard", href: "/alumni/dashboard", icon: LayoutDashboard },
+      { name: "Directory", href: "/student/alumni", icon: Users },
+      { name: "Connections", href: "/alumni/connections", icon: UsersRound },
+      { name: "Mentorship", href: "/alumni/mentorship/availability", icon: GraduationCap },
+      { name: "Referrals", href: "/alumni/referrals", icon: Briefcase },
+      { name: "Events", href: "/alumni/events", icon: Calendar },
+      { name: "Messages", href: "/alumni/messages", icon: MessageSquare },
+      { name: "Profile", href: "/alumni/profile", icon: User },
+    ];
+  } else if (userRole === "college_admin") {
+    navigation = [
+      { name: "Overview", href: "/admin/dashboard", icon: LayoutDashboard },
+      { name: "Verify Users", href: "/admin/users/verify", icon: ShieldAlert },
+      { name: "Manage Users", href: "/admin/users/students", icon: Users },
+      { name: "Moderation", href: "/admin/moderation", icon: ShieldAlert },
+      { name: "Events", href: "/admin/events", icon: Calendar },
+      { name: "Job Approvals", href: "/admin/jobs", icon: Briefcase },
+      { name: "Announcements", href: "/admin/announcements", icon: MessageSquare },
+      { name: "Analytics", href: "/admin/analytics", icon: LayoutDashboard },
+      { name: "Bulk Import", href: "/admin/import", icon: PlusSquare },
+    ];
+  } else if (userRole === "super_admin") {
+    navigation = [
+      { name: "Platform", href: "/sysadmin/dashboard", icon: LayoutDashboard },
+      { name: "Colleges", href: "/sysadmin/colleges", icon: Building2 },
+      { name: "Global Users", href: "/sysadmin/users", icon: Users },
+      { name: "Role Admin", href: "/sysadmin/roles", icon: ShieldAlert },
+      { name: "Feature Flags", href: "/sysadmin/features", icon: PlusSquare },
+      { name: "Audit Logs", href: "/sysadmin/audit", icon: LayoutDashboard },
+      { name: "Escalations", href: "/sysadmin/escalations", icon: ShieldAlert },
+      { name: "Analytics", href: "/sysadmin/analytics", icon: LayoutDashboard },
+      { name: "System Health", href: "/sysadmin/health", icon: LayoutDashboard },
+    ];
+  }
 
   return (
     <aside className="h-screen w-64 fixed left-0 top-0 overflow-y-auto bg-surface border-r border-border flex flex-col z-50">

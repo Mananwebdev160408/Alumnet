@@ -286,7 +286,7 @@ export const RegisterOrg = () => {
         uid: user.uid,
         name: `${formData.adminFirstName} ${formData.adminLastName}`,
         email: formData.adminEmail,
-        role: "collegeadmin",
+        role: "college_admin",
         college: formData.orgName,
         collegeId: orgId,
         phone: formData.adminPhone,

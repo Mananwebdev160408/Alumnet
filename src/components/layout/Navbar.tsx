@@ -17,7 +17,7 @@ import { Search, Bell, Settings as SettingsIcon, User, LogOut, ChevronDown } fro
 export const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser, userRole } = useAuth();
 
   const handleLogout = async () => {
     try {
@@ -26,6 +26,20 @@ export const Navbar = () => {
     } catch (error) {
       console.error("Error signing out: ", error);
     }
+  };
+
+  const navigateToProfile = () => {
+    if (userRole === "student") navigate("/student/profile");
+    else if (userRole === "alumni") navigate("/alumni/profile");
+    else navigate("/dashboard");
+  };
+
+  const navigateToSettings = () => {
+    if (userRole === "student") navigate("/student/settings");
+    else if (userRole === "alumni") navigate("/alumni/settings");
+    else if (userRole === "college_admin") navigate("/admin/settings");
+    else if (userRole === "super_admin") navigate("/sysadmin/settings");
+    else navigate("/dashboard");
   };
 
   if (location.pathname === '/' || location.pathname.startsWith('/auth')) return null;
@@ -70,11 +84,11 @@ export const Navbar = () => {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-border/20" />
-              <DropdownMenuItem onClick={() => navigate("/profile")} className="cursor-pointer">
+              <DropdownMenuItem onClick={navigateToProfile} className="cursor-pointer">
                 <User className="mr-3 size-4" />
                 Profile
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/settings")} className="cursor-pointer">
+              <DropdownMenuItem onClick={navigateToSettings} className="cursor-pointer">
                 <SettingsIcon className="mr-3 size-4" />
                 Settings
               </DropdownMenuItem>

@@ -70,7 +70,7 @@ const testimonial = {
 export function Login() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { currentUser, loading: authLoading } = useAuth();
+  const { currentUser, userRole, loading: authLoading } = useAuth();
   
   const [formData, setFormData] = useState({
     email: "",
@@ -84,12 +84,18 @@ export function Login() {
   const [selectedInstitution, setSelectedInstitution] = useState<string>("");
   const [keepSignedIn, setKeepSignedIn] = useState(true);
 
-  // Auto-redirect authenticated users to dashboard
+  // Auto-redirect authenticated users to appropriate dashboard
   useEffect(() => {
-    if (!authLoading && currentUser) {
-      navigate("/dashboard");
+    if (!authLoading && currentUser && userRole) {
+      if (userRole === "super_admin") {
+        navigate("/admin/dashboard");
+      } else if (userRole === "college_admin") {
+        navigate("/org/dashboard");
+      } else {
+        navigate("/dashboard");
+      }
     }
-  }, [currentUser, authLoading, navigate]);
+  }, [currentUser, userRole, authLoading, navigate]);
 
   // Fetch colleges from Firestore
   useEffect(() => {
@@ -151,9 +157,9 @@ export function Login() {
       await signInWithEmailAndPassword(auth, formData.email, formData.password);
       toast({
         title: "Welcome back",
-        description: "Your access to the alumni record has been restored.",
+        description: "Your access has been restored.",
       });
-      navigate("/dashboard");
+      // The useEffect above will handle the redirect once AuthContext updates
     } catch (error: unknown) {
       console.error("Login error:", error);
       const message = error instanceof Error ? error.message : String(error);
