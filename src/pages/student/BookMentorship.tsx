@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -6,13 +6,20 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ArrowLeft, CalendarDays, Clock, Video, FileText, CheckCircle2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { ArrowLeft, CalendarDays, Clock, Video, Loader2, CheckCircle2 } from "lucide-react";
+import { useAuth } from "@/lib/AuthContext";
+import { getUserProfile, createSession } from "@/lib/firestoreService";
+import type { UserProfile } from "@/lib/types";
+import { toast } from "sonner";
 
 export default function BookMentorship() {
-  const { alumniId } = useParams();
+  const { alumniId } = useParams<{ alumniId: string }>();
+  const { currentUser, userProfile } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
+
+  const [mentor, setMentor] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedDuration, setSelectedDuration] = useState<number>(30);
@@ -20,39 +27,91 @@ export default function BookMentorship() {
   const [agenda, setAgenda] = useState<string>("");
   const [isBooked, setIsBooked] = useState<boolean>(false);
 
-  // Mock alumni data
-  const alumni = {
-    name: "Eleanor Pena",
-    role: "Product Designer",
-    company: "Figma",
-    init: "EP",
-    slots: ["09:00 AM", "10:30 AM", "01:00 PM", "03:30 PM", "05:00 PM"]
+  const slots = ["09:00 AM", "10:30 AM", "01:00 PM", "03:30 PM", "05:00 PM"];
+
+  useEffect(() => {
+    if (!alumniId) return;
+    getUserProfile(alumniId).then((p) => {
+      setMentor(p);
+      setLoading(false);
+    }).catch((err) => {
+      console.error(err);
+      toast.error("Failed to load mentor profile.");
+      setLoading(false);
+    });
+  }, [alumniId]);
+
+  const parseDateTime = (date: Date, slot: string) => {
+    const d = new Date(date);
+    const [time, modifier] = slot.split(" ");
+    let [hours, minutes] = time.split(":").map(Number);
+    if (modifier === "PM" && hours < 12) hours += 12;
+    if (modifier === "AM" && hours === 12) hours = 0;
+    d.setHours(hours, minutes, 0, 0);
+    return d;
   };
 
-  const handleBook = () => {
+  const handleBook = async () => {
+    if (!currentUser || !mentor) return;
+    if (!selectedDate) {
+      toast.error("Please select a date.");
+      return;
+    }
     if (!selectedSlot) {
-      toast({
-        title: "Selection Required",
-        description: "Please select a time slot for your session.",
-        variant: "destructive"
-      });
+      toast.error("Please select a time slot.");
       return;
     }
     if (!agenda.trim()) {
-      toast({
-        title: "Agenda Required",
-        description: "Please write a short agenda explaining your goals.",
-        variant: "destructive"
-      });
+      toast.error("Please write a short agenda.");
       return;
     }
 
-    setIsBooked(true);
-    toast({
-      title: "Session Booked",
-      description: "Confirmation email and meeting link sent successfully."
-    });
+    setSubmitting(true);
+    try {
+      const scheduledTime = parseDateTime(selectedDate, selectedSlot);
+      await createSession({
+        studentId: currentUser.uid,
+        mentorId: mentor.uid,
+        collegeId: userProfile?.collegeId || mentor.collegeId,
+        scheduledAt: scheduledTime,
+        duration: selectedDuration,
+        status: "pending",
+        meetingLink: "https://meet.google.com/abc-defg-hij",
+        notes: agenda.trim(),
+        feedback: {},
+      });
+      setIsBooked(true);
+      toast.success("Mentorship session booked successfully!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to book session.");
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  const initials = (name: string) =>
+    name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!mentor) {
+    return (
+      <div className="flex-1 max-w-xl mx-auto w-full p-8 pt-12 text-center space-y-6">
+        <h3 className="text-xl font-bold uppercase">Mentor Profile Not Found</h3>
+        <p className="text-muted-foreground">The requested mentor is not available.</p>
+        <Button asChild className="border-2 border-border rounded-none uppercase font-bold text-xs">
+          <Link to="/student/alumni">Back to Directory</Link>
+        </Button>
+      </div>
+    );
+  }
 
   if (isBooked) {
     return (
@@ -62,22 +121,22 @@ export default function BookMentorship() {
             <div className="h-16 w-16 bg-emerald-100 border-2 border-emerald-500 rounded-full flex items-center justify-center mb-4 text-emerald-600">
               <CheckCircle2 className="h-10 w-10" />
             </div>
-            <CardTitle className="text-3xl font-black uppercase tracking-tight">Booking Confirmed!</CardTitle>
+            <CardTitle className="text-3xl font-black uppercase tracking-tight">Booking Requested!</CardTitle>
             <CardDescription className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mt-2">
-              Your mentorship slot has been reserved.
+              Your session request has been submitted to {mentor.name}.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-4 text-left border-t border-border mt-6">
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10 border border-border">
-                <AvatarFallback className="bg-primary/10 text-primary font-bold">{alumni.init}</AvatarFallback>
+                <AvatarFallback className="bg-primary/10 text-primary font-bold">{initials(mentor.name)}</AvatarFallback>
               </Avatar>
               <div>
-                <p className="text-sm font-bold">{alumni.name}</p>
-                <p className="text-xs text-muted-foreground">{alumni.role} at {alumni.company}</p>
+                <p className="text-sm font-bold uppercase">{mentor.name}</p>
+                <p className="text-xs text-muted-foreground">{mentor.occupation}{mentor.company ? ` at ${mentor.company}` : ""}</p>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border/10 text-sm font-medium">
+            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border/10 text-xs font-semibold text-muted-foreground">
               <div className="flex items-center gap-2">
                 <CalendarDays className="h-4 w-4 text-primary" />
                 <span>{selectedDate?.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
@@ -87,9 +146,9 @@ export default function BookMentorship() {
                 <span>{selectedSlot} ({selectedDuration} mins)</span>
               </div>
             </div>
-            <div className="flex items-center gap-2 pt-2 text-sm font-medium">
+            <div className="flex items-center gap-2 pt-2 text-xs font-semibold text-muted-foreground">
               <Video className="h-4 w-4 text-primary" />
-              <span className="text-primary hover:underline cursor-pointer">meet.google.com/abc-defg-hij</span>
+              <span>Google Meet (meet.google.com/abc-defg-hij)</span>
             </div>
           </CardContent>
           <CardFooter className="pt-6 border-t border-border flex flex-col gap-2">
@@ -107,20 +166,20 @@ export default function BookMentorship() {
 
   return (
     <div className="flex-1 max-w-4xl mx-auto w-full p-8 pt-6 space-y-6">
-      <Link to="/student/alumni" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground hover:text-foreground transition-colors mb-2">
-        <ArrowLeft className="size-3" /> Back to Directory
+      <Link to={`/student/alumni/${mentor.uid}`} className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground hover:text-foreground transition-colors mb-2">
+        <ArrowLeft className="size-3" /> Back to Profile
       </Link>
 
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-foreground uppercase">Book Mentorship</h2>
-          <p className="text-muted-foreground">Select an open availability slot with {alumni.name} and describe your agenda.</p>
+          <p className="text-muted-foreground">Select an open availability slot with {mentor.name} and describe your agenda.</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-6">
-          <Card className="border-2 border-border shadow-[6px_6px_0_0_rgba(0,0,0,1)] rounded-none">
+          <Card className="border-2 border-border shadow-[6px_6px_0_0_rgba(0,0,0,1)] rounded-none bg-card">
             <CardHeader className="border-b border-border">
               <CardTitle className="uppercase text-sm tracking-wider">1. Select Date & Slots</CardTitle>
             </CardHeader>
@@ -154,7 +213,7 @@ export default function BookMentorship() {
                 <div className="space-y-2">
                   <span className="text-[10px] font-black text-muted-foreground tracking-widest uppercase block">Available Slots</span>
                   <div className="grid grid-cols-2 gap-2">
-                    {alumni.slots.map((slot) => (
+                    {slots.map((slot) => (
                       <Button
                         key={slot}
                         type="button"
@@ -171,7 +230,7 @@ export default function BookMentorship() {
             </CardContent>
           </Card>
 
-          <Card className="border-2 border-border shadow-[6px_6px_0_0_rgba(0,0,0,1)] rounded-none">
+          <Card className="border-2 border-border shadow-[6px_6px_0_0_rgba(0,0,0,1)] rounded-none bg-card">
             <CardHeader className="border-b border-border">
               <CardTitle className="uppercase text-sm tracking-wider">2. Agenda & Goals</CardTitle>
             </CardHeader>
@@ -203,11 +262,11 @@ export default function BookMentorship() {
             <CardContent className="p-6 space-y-4">
               <div className="flex items-center gap-3">
                 <Avatar className="h-12 w-12 border border-border">
-                  <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">{alumni.init}</AvatarFallback>
+                  <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">{initials(mentor.name)}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <h4 className="font-bold text-sm uppercase">{alumni.name}</h4>
-                  <p className="text-xs text-muted-foreground">{alumni.role} at {alumni.company}</p>
+                  <h4 className="font-bold text-sm uppercase">{mentor.name}</h4>
+                  <p className="text-xs text-muted-foreground">{mentor.occupation}{mentor.company ? ` at ${mentor.company}` : ""}</p>
                 </div>
               </div>
 
@@ -230,9 +289,13 @@ export default function BookMentorship() {
                 </div>
               </div>
             </CardContent>
-            <CardFooter className="p-6 border-t border-border">
-              <Button className="w-full bg-primary hover:bg-primary/95 text-white font-bold uppercase tracking-widest text-xs h-12 rounded-none border-2 border-border shadow-[4px_4px_0_0_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all" onClick={handleBook}>
-                Confirm Booking
+            <CardFooter className="p-6 border-t border-border bg-muted/10">
+              <Button 
+                className="w-full bg-primary hover:bg-primary/95 text-white font-bold uppercase tracking-widest text-xs h-12 rounded-none border-2 border-border shadow-[4px_4px_0_0_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all" 
+                onClick={handleBook}
+                disabled={submitting}
+              >
+                {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : "Confirm Booking"}
               </Button>
             </CardFooter>
           </Card>

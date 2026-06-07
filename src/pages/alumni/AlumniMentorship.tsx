@@ -1,207 +1,290 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Calendar } from "@/components/ui/calendar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Clock, CalendarDays, CheckCircle2, XCircle, Star, Save, Smile } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { CheckCircle2, XCircle, Star, Loader2, Calendar as CalendarIcon } from "lucide-react";
+import { useAuth } from "@/lib/AuthContext";
+import { subscribeToSessions, updateSessionStatus, getUserProfile } from "@/lib/firestoreService";
+import type { Session, UserProfile } from "@/lib/types";
+import { toast } from "sonner";
+import { format, formatDistanceToNow } from "date-fns";
 
 export default function AlumniMentorship() {
-  const { toast } = useToast();
-  
-  const [weeklyAvailability, setWeeklyAvailability] = useState([
-    { day: "Saturday", slots: ["10:00 AM - 11:00 AM", "11:00 AM - 12:00 PM"] },
-    { day: "Sunday", slots: ["02:00 PM - 03:00 PM"] }
-  ]);
+  const { currentUser, userProfile } = useAuth();
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [studentProfiles, setStudentProfiles] = useState<Record<string, UserProfile>>({});
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const [bookingRequests, setBookingRequests] = useState([
-    {
-      id: 1,
-      studentName: "James Miller",
-      major: "Computer Science",
-      batch: "Class of 2025",
-      slot: "Saturday, June 13 at 10:00 AM",
-      agenda: "Looking for tips on portfolio reviews and mock interview preparation.",
-      init: "JM"
+  useEffect(() => {
+    if (!currentUser) return;
+    const unsub = subscribeToSessions(currentUser.uid, "alumni", async (sess) => {
+      setSessions(sess);
+      setLoading(false);
+      // Fetch student profiles
+      const uids = new Set(sess.map((s) => s.studentId));
+      const fetched: Record<string, UserProfile> = {};
+      await Promise.all(
+        Array.from(uids).map(async (uid) => {
+          const p = await getUserProfile(uid);
+          if (p) fetched[uid] = p;
+        })
+      );
+      setStudentProfiles((prev) => ({ ...prev, ...fetched }));
+    });
+    return unsub;
+  }, [currentUser]);
+
+  const pendingSessions = sessions.filter((s) => s.status === "pending");
+  const confirmedSessions = sessions.filter((s) => s.status === "confirmed");
+  const pastSessions = sessions.filter((s) =>
+    s.status === "completed" || s.status === "cancelled"
+  );
+
+  const handleAccept = async (sessionId: string) => {
+    setActionLoading(sessionId);
+    try {
+      await updateSessionStatus(sessionId, "confirmed");
+      toast.success("Session confirmed! Student has been notified.");
+    } catch {
+      toast.error("Failed to confirm session.");
+    } finally {
+      setActionLoading(null);
     }
-  ]);
+  };
 
-  const [pastSessions, setPastSessions] = useState([
-    {
-      id: 1,
-      studentName: "Olivia Martin",
-      date: "May 25, 2026",
-      rating: 5,
-      review: "Awesome mentorship. Helped me refine my resume and design workflow.",
-      init: "OM",
-      notes: "Reviewed portfolio site. Highly motivated student."
+  const handleDecline = async (sessionId: string) => {
+    setActionLoading(sessionId);
+    try {
+      await updateSessionStatus(sessionId, "cancelled");
+      toast.success("Session declined.");
+    } catch {
+      toast.error("Failed to decline session.");
+    } finally {
+      setActionLoading(null);
     }
-  ]);
-
-  const handleAcceptRequest = (id: number) => {
-    setBookingRequests(prev => prev.filter(r => r.id !== id));
-    toast({
-      title: "Request Approved",
-      description: "Confirmation email and link sent to student."
-    });
   };
 
-  const handleDeclineRequest = (id: number) => {
-    setBookingRequests(prev => prev.filter(r => r.id !== id));
-    toast({
-      title: "Request Declined",
-      description: "Notification sent back to student."
-    });
+  const handleComplete = async (sessionId: string) => {
+    setActionLoading(sessionId);
+    try {
+      await updateSessionStatus(sessionId, "completed");
+      toast.success("Session marked as completed!");
+    } catch {
+      toast.error("Failed to update session.");
+    } finally {
+      setActionLoading(null);
+    }
   };
 
-  const handleUpdateAvailability = () => {
-    toast({
-      title: "Availability Updated",
-      description: "Weekly template updated successfully."
-    });
-  };
+  const initials = (name: string) =>
+    name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 
-  const handleSaveNotes = (id: number, notes: string) => {
-    setPastSessions(prev => prev.map(s => s.id === id ? { ...s, notes } : s));
-    toast({
-      title: "Session Notes Saved",
-      description: "Feedback saved locally."
-    });
-  };
+  if (loading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 max-w-7xl mx-auto w-full p-8 pt-6 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-foreground uppercase">Mentorship Management</h2>
-          <p className="text-muted-foreground">Configure availability slots, manage student booking requests, and view session notes.</p>
+          <p className="text-muted-foreground">Manage student booking requests and view session history.</p>
         </div>
+        <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 px-3 py-1.5">
+          {userProfile?.isMentor ? "✓ Mentor Profile Active" : "Not a Mentor"}
+        </Badge>
       </div>
 
       <Tabs defaultValue="requests" className="w-full">
         <TabsList className="bg-muted/50 p-1 mb-6">
           <TabsTrigger value="requests" className="px-6 uppercase text-xs font-bold tracking-wider relative">
             Booking Requests
-            {bookingRequests.length > 0 && (
-              <Badge variant="destructive" className="ml-2 rounded-none border border-border text-[9px] px-1.5 py-0.5">{bookingRequests.length}</Badge>
+            {pendingSessions.length > 0 && (
+              <Badge variant="destructive" className="ml-2 rounded-none text-[9px] px-1.5 py-0.5">
+                {pendingSessions.length}
+              </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="availability" className="px-6 uppercase text-xs font-bold tracking-wider">Weekly Template</TabsTrigger>
-          <TabsTrigger value="sessions" className="px-6 uppercase text-xs font-bold tracking-wider">Past Sessions</TabsTrigger>
+          <TabsTrigger value="confirmed" className="px-6 uppercase text-xs font-bold tracking-wider">
+            Confirmed ({confirmedSessions.length})
+          </TabsTrigger>
+          <TabsTrigger value="sessions" className="px-6 uppercase text-xs font-bold tracking-wider">
+            Past Sessions ({pastSessions.length})
+          </TabsTrigger>
         </TabsList>
 
+        {/* Pending Requests */}
         <TabsContent value="requests" className="space-y-6">
-          {bookingRequests.map((req) => (
-            <Card key={req.id} className="border-2 border-border shadow-[6px_6px_0_0_rgba(0,0,0,1)] rounded-none">
-              <CardHeader className="border-b border-border bg-muted/20">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 border border-border flex items-center justify-center bg-primary/10 text-primary font-bold">
-                      {req.init}
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-sm uppercase">{req.studentName}</h4>
-                      <p className="text-xs text-muted-foreground">{req.major} &mdash; {req.batch}</p>
-                    </div>
-                  </div>
-                  <Badge variant="outline" className="border-primary text-primary font-bold text-[10px] uppercase py-1 px-2 shrink-0">
-                    {req.slot}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="p-6 space-y-4">
-                <div className="space-y-2">
-                  <span className="text-[10px] font-black text-muted-foreground tracking-widest uppercase block">Session Agenda</span>
-                  <p className="text-sm font-semibold">{req.agenda}</p>
-                </div>
-              </CardContent>
-              <CardFooter className="p-6 border-t border-border flex justify-end gap-2 bg-muted/10">
-                <Button variant="outline" className="rounded-none border-2 border-border text-destructive hover:bg-destructive/10 uppercase text-xs font-bold px-4" onClick={() => handleDeclineRequest(req.id)}>
-                  <XCircle className="mr-2 h-4 w-4" /> Decline
-                </Button>
-                <Button className="rounded-none border-2 border-border bg-primary hover:bg-primary/95 text-white uppercase text-xs font-bold px-4" onClick={() => handleAcceptRequest(req.id)}>
-                  <CheckCircle2 className="mr-2 h-4 w-4" /> Accept Session
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-          {bookingRequests.length === 0 && (
-            <div className="border border-border py-12 text-center text-muted-foreground text-sm font-medium">
-              You have no pending booking requests.
+          {pendingSessions.length === 0 ? (
+            <div className="border border-border py-12 text-center text-muted-foreground text-sm font-medium rounded-lg">
+              No pending booking requests.
             </div>
+          ) : (
+            pendingSessions.map((sess) => {
+              const student = studentProfiles[sess.studentId];
+              return (
+                <Card key={sess.id} className="border-2 border-border shadow-[6px_6px_0_0_rgba(0,0,0,1)] rounded-none">
+                  <CardHeader className="border-b border-border bg-muted/20">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 border border-border flex items-center justify-center bg-primary/10 text-primary font-bold">
+                          {student ? initials(student.name) : "?"}
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-sm uppercase">{student?.name ?? "Student"}</h4>
+                          <p className="text-xs text-muted-foreground">
+                            {student?.branch} — {student?.college}
+                          </p>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="border-primary text-primary font-bold text-[10px] uppercase py-1 px-2 shrink-0">
+                        <CalendarIcon className="h-3 w-3 mr-1" />
+                        {format(sess.scheduledAt, "MMM d, yyyy 'at' h:mm a")}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-6 space-y-4">
+                    <div className="space-y-2">
+                      <span className="text-[10px] font-black text-muted-foreground tracking-widest uppercase block">Session Agenda / Notes</span>
+                      <p className="text-sm font-semibold">{sess.notes || "No agenda provided."}</p>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Duration: <span className="font-semibold">{sess.duration ?? 60} minutes</span>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="p-6 border-t border-border flex justify-end gap-2 bg-muted/10">
+                    <Button
+                      variant="outline"
+                      className="rounded-none border-2 border-border text-destructive hover:bg-destructive/10 uppercase text-xs font-bold px-4"
+                      disabled={actionLoading === sess.id}
+                      onClick={() => handleDecline(sess.id)}
+                    >
+                      <XCircle className="mr-2 h-4 w-4" /> Decline
+                    </Button>
+                    <Button
+                      className="rounded-none border-2 border-border bg-primary hover:bg-primary/95 text-white uppercase text-xs font-bold px-4"
+                      disabled={actionLoading === sess.id}
+                      onClick={() => handleAccept(sess.id)}
+                    >
+                      {actionLoading === sess.id ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                      )}
+                      Accept Session
+                    </Button>
+                  </CardFooter>
+                </Card>
+              );
+            })
           )}
         </TabsContent>
 
-        <TabsContent value="availability" className="space-y-6">
-          <Card className="border-2 border-border shadow-[6px_6px_0_0_rgba(0,0,0,1)] rounded-none">
-            <CardHeader className="border-b border-border">
-              <CardTitle className="uppercase text-sm tracking-wider">Availability Scheduler</CardTitle>
-              <CardDescription>Setup weekly recurring hours when students can book calls with you.</CardDescription>
-            </CardHeader>
-            <CardContent className="p-6 space-y-6">
-              {weeklyAvailability.map((avail, idx) => (
-                <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border border-border bg-white">
-                  <span className="font-bold text-sm uppercase tracking-wider">{avail.day}</span>
-                  <div className="flex flex-wrap gap-2">
-                    {avail.slots.map((s, i) => (
-                      <Badge key={i} variant="outline" className="border-border text-foreground font-semibold px-3 py-1 bg-muted/20">
-                        {s}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              ))}
-              <div className="flex justify-end pt-4">
-                <Button className="bg-primary hover:bg-primary/95 text-white border-2 border-border shadow-[4px_4px_0_0_rgba(0,0,0,1)] rounded-none uppercase text-xs font-bold" onClick={handleUpdateAvailability}>
-                  Save Template Settings
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Confirmed */}
+        <TabsContent value="confirmed" className="space-y-6">
+          {confirmedSessions.length === 0 ? (
+            <div className="border border-border py-12 text-center text-muted-foreground text-sm font-medium rounded-lg">
+              No confirmed sessions yet.
+            </div>
+          ) : (
+            confirmedSessions.map((sess) => {
+              const student = studentProfiles[sess.studentId];
+              const isPast = sess.scheduledAt < new Date();
+              return (
+                <Card key={sess.id} className="border-2 border-border shadow-[4px_4px_0_0_rgba(0,0,0,1)] rounded-none">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 border border-border flex items-center justify-center bg-primary/10 text-primary font-bold">
+                          {student ? initials(student.name) : "?"}
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-sm uppercase">{student?.name ?? "Student"}</h4>
+                          <p className="text-xs text-muted-foreground">
+                            {format(sess.scheduledAt, "MMM d, yyyy 'at' h:mm a")}
+                            {" "}({formatDistanceToNow(sess.scheduledAt, { addSuffix: true })})
+                          </p>
+                        </div>
+                      </div>
+                      {isPast && (
+                        <Button
+                          size="sm"
+                          className="rounded-none bg-emerald-600 hover:bg-emerald-700 text-white border-2 border-border uppercase text-[10px] font-bold"
+                          disabled={actionLoading === sess.id}
+                          onClick={() => handleComplete(sess.id)}
+                        >
+                          {actionLoading === sess.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <CheckCircle2 className="h-4 w-4 mr-1" />
+                          )}
+                          Mark Complete
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })
+          )}
         </TabsContent>
 
+        {/* Past Sessions */}
         <TabsContent value="sessions" className="space-y-6">
-          {pastSessions.map((session) => (
-            <Card key={session.id} className="border-2 border-border shadow-[6px_6px_0_0_rgba(0,0,0,1)] rounded-none">
-              <CardHeader className="border-b border-border">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="font-bold text-sm uppercase">{session.studentName}</h4>
-                    <p className="text-xs text-muted-foreground">Session Date: {session.date}</p>
-                  </div>
-                  <div className="flex gap-0.5">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className={`h-4 w-4 ${i < session.rating ? "text-amber-500 fill-amber-500" : "text-muted"}`} />
-                    ))}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-6 space-y-4">
-                {session.review && (
-                  <div className="p-3 bg-muted/25 border border-border/50 text-sm italic">
-                    "{session.review}"
-                  </div>
-                )}
-                <div className="space-y-2">
-                  <span className="text-[10px] font-black text-muted-foreground tracking-widest uppercase block">Internal Session Notes</span>
-                  <Textarea
-                    defaultValue={session.notes}
-                    onChange={(e) => session.notes = e.target.value}
-                    className="rounded-none border-2 border-border min-h-[80px]"
-                    placeholder="Enter private reminders, topics discussed, or progress checklist for this student..."
-                  />
-                </div>
-              </CardContent>
-              <CardFooter className="p-6 border-t border-border flex justify-end">
-                <Button size="sm" variant="outline" className="rounded-none border-2 border-border font-bold uppercase text-[10px] tracking-wider" onClick={() => handleSaveNotes(session.id, session.notes)}>
-                  <Save className="h-4.5 w-4.5 mr-2" /> Save Notes
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
+          {pastSessions.length === 0 ? (
+            <div className="border border-border py-12 text-center text-muted-foreground text-sm font-medium rounded-lg">
+              No past sessions yet.
+            </div>
+          ) : (
+            pastSessions.map((sess) => {
+              const student = studentProfiles[sess.studentId];
+              return (
+                <Card key={sess.id} className="border-2 border-border shadow-[6px_6px_0_0_rgba(0,0,0,1)] rounded-none">
+                  <CardHeader className="border-b border-border">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-bold text-sm uppercase">{student?.name ?? "Student"}</h4>
+                        <p className="text-xs text-muted-foreground">
+                          Session Date: {format(sess.scheduledAt, "MMM d, yyyy")}
+                        </p>
+                      </div>
+                      <Badge variant={sess.status === "completed" ? "secondary" : "destructive"} className="uppercase text-[9px]">
+                        {sess.status}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-6 space-y-4">
+                    {sess.feedback?.rating && (
+                      <div>
+                        <div className="flex gap-0.5 mb-1">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} className={`h-4 w-4 ${i < (sess.feedback.rating ?? 0) ? "text-amber-500 fill-amber-500" : "text-muted"}`} />
+                          ))}
+                        </div>
+                        {sess.feedback.comment && (
+                          <div className="p-3 bg-muted/25 border border-border/50 text-sm italic">
+                            "{sess.feedback.comment}"
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {sess.notes && (
+                      <div className="space-y-2">
+                        <span className="text-[10px] font-black text-muted-foreground tracking-widest uppercase block">Session Notes</span>
+                        <p className="text-sm">{sess.notes}</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })
+          )}
         </TabsContent>
       </Tabs>
     </div>

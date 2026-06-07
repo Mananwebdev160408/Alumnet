@@ -1,73 +1,105 @@
-# Welcome to your Lovable project
+# AlumNet: Closed-Loop Institutional Mentorship & Engagement Platform
 
-## Project info
+[![Smart India Hackathon 2025](https://img.shields.io/badge/SIH-2025-blue.svg)](https://www.sih.gov.in/)
+[![Tech Stack](https://img.shields.io/badge/Stack-React%20%7C%20Firebase%20%7C%20Tailwind-orange.svg)]()
+[![AI Enabled](https://img.shields.io/badge/AI-Azure%20AI%20Inference-purple.svg)]()
 
-**URL**: https://lovable.dev/projects/d0c149ed-5675-45c2-b99e-a2a088336698
+AlumNet is a premium, **closed-loop institutional SaaS mentorship and alumni engagement platform** developed by **Team Syntax Squad** for the **Smart India Hackathon (SIH) 2025** (Problem Statement #25017). Unlike open platforms, AlumNet operates on pre-verified institutional trust—locking connectivity exclusively within a university's verified network to deliver high-quality mentorship, job referrals, and career outcomes.
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## 🚀 Key Features
 
-**Use Lovable**
+*   **🔒 Verified Onboarding**: Institution-led invitation flows and bulk verification queues.
+*   **📂 Multi-Role Architecture**: Dedicated access views for **Students**, **Alumni**, **College Admins**, and **System Super-Admins**.
+*   **📅 Slot-Based Mentorship**: Availability calendar syncing, automatic timezones, and integrations for video sessions.
+*   **💼 Job Referral Portal**: Exclusive job boards, application workflows, and referral queue status trackers.
+*   **💬 Real-time Communication**: 1:1 chat, media uploads, auto-replies, and notification digest settings.
+*   **🤖 AI-Powered Assistant**: Custom-tailored assistant powered by **Azure AI Inference** to answer platform inquiries, assist with alumni navigation, and guide users.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/d0c149ed-5675-45c2-b99e-a2a088336698) and start prompting.
+---
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🛠️ Technology Stack
 
-**Use your preferred IDE**
+| Layer | Technologies |
+|---|---|
+| **Frontend** | React 19, TypeScript, Vite, React Router, TanStack Query, Tailwind CSS, shadcn/ui, Framer Motion |
+| **Backend & Auth** | Firebase Authentication, Firebase Cloud Functions (v2), Node.js, Express |
+| **Database & Storage** | Cloud Firestore, Cloud Storage, Firebase Realtime Database (for chat sync) |
+| **AI Integration** | Azure AI Inference SDK, Github Models (GPT-4o) |
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+---
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 📁 Project Directory Structure
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+client/                         # Project Root
+├── src/                        # Source files
+│   ├── components/             # Reusable UI components & layouts
+│   ├── hooks/                  # Custom React hooks
+│   ├── lib/                # Config, context providers, and utils
+│   └── pages/                  # Page views organized by role / route
+├── scripts/                    # Database seeding & administrative scripts
+├── docs/                       # Project Documentation (Route specs, tech docs)
+│   ├── ALUMNET_DOCUMENTATION.md # In-depth technical architecture
+│   └── pages_specification.md   # Front-end pages & route matrix
+├── file.txt                    # Raw page specifications
+└── package.json                # Node project configuration
 ```
 
-**Edit a file directly in GitHub**
+---
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## ⚙️ Development Setup
 
-**Use GitHub Codespaces**
+Follow these steps to run the client application locally.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Prerequisites
 
-## What technologies are used for this project?
+*   [Node.js](https://nodejs.org/) (v18 or higher recommended)
+*   [Firebase CLI](https://firebase.google.com/docs/cli) installed globally:
+    ```sh
+    npm install -g firebase-tools
+    ```
 
-This project is built with:
+### Running Locally
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+1.  **Install dependencies** using `npm` or `bun`:
+    ```sh
+    npm install
+    # or
+    bun install
+    ```
+2.  **Configure environment variables**:
+    Create a `.env.local` file based on `.env.example`:
+    ```env
+    VITE_FIREBASE_API_KEY="your-api-key"
+    VITE_FIREBASE_AUTH_DOMAIN="your-auth-domain.firebaseapp.com"
+    VITE_FIREBASE_PROJECT_ID="your-project-id"
+    VITE_FIREBASE_STORAGE_BUCKET="your-storage-bucket.appspot.com"
+    VITE_FIREBASE_MESSAGING_SENDER_ID="your-sender-id"
+    VITE_FIREBASE_APP_ID="your-app-id"
+    VITE_AICHAT_FUNCTION_URL="http://127.0.0.1:5001/your-project-id/us-central1/aichat" # Local emulator URL
+    ```
+3.  **Run the development server**:
+    ```sh
+    npm run dev
+    ```
 
-## How can I deploy this project?
+### Seeding the Database
 
-Simply open [Lovable](https://lovable.dev/projects/d0c149ed-5675-45c2-b99e-a2a088336698) and click on Share -> Publish.
+To run the seeding script and populate your Firestore instance with sample mock data (students, alumni, sessions, referrals, and admin configurations):
 
-## Can I connect a custom domain to my Lovable project?
+1.  Set up the Firebase admin credentials. Make sure you place your `firebase-service-account.json` file in this directory.
+2.  Run the seed script:
+    ```sh
+    npm run seed
+    ```
 
-Yes, you can!
+---
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 📚 Further Documentation
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+For deeper details, consult the following documentation in the [docs](file:///c:/Users/asus/OneDrive/Documents/code%20zone/alumnet-ongoing/network-alum/client/docs) directory:
+
+*   📖 [AlumNet Technical Documentation](file:///c:/Users/asus/OneDrive/Documents/code%20zone/alumnet-ongoing/network-alum/client/docs/ALUMNET_DOCUMENTATION.md): Database schemas, Firebase rules, API designs, onboarding workflows, and design systems.
+*   🗺️ [Pages & Route Specification](file:///c:/Users/asus/OneDrive/Documents/code%20zone/alumnet-ongoing/network-alum/client/docs/pages_specification.md): Complete index of student, alumni, college admin, and system admin routes and functionalities.

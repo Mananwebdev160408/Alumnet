@@ -1,19 +1,112 @@
-import React from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import React, { useEffect, useState, useRef } from "react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Search, Send, Phone, Video, MoreVertical, Paperclip, Smile } from "lucide-react";
+import { Search, Send, MoreVertical, Loader2 } from "lucide-react";
+import { useAuth } from "@/lib/AuthContext";
+import {
+  subscribeToConversations,
+  subscribeToMessages,
+  sendMessage,
+  getUserProfile,
+  getOrCreateConversation,
+} from "@/lib/firestoreService";
+import type { Conversation, Message, UserProfile } from "@/lib/types";
+import { useParams, useNavigate } from "react-router-dom";
+import { formatDistanceToNow } from "date-fns";
 
 export default function Messages() {
-  const conversations = [
-    { name: "John Doe", lastMessage: "Sounds good, let's connect tomorrow.", time: "10:30 AM", unread: 2, init: "JD", active: true },
-    { name: "Jane Cooper", lastMessage: "Can you send me the latest pitch deck?", time: "Yesterday", unread: 0, init: "JC", active: false },
-    { name: "Kristin Watson", lastMessage: "Thanks for the referral!", time: "Monday", unread: 0, init: "KW", active: false },
-    { name: "Esther Howard", lastMessage: "Are you attending the alumni event?", time: "Mar 12", unread: 0, init: "EH", active: false },
-    { name: "Cameron Williamson", lastMessage: "Great to meet you.", time: "Mar 10", unread: 0, init: "CW", active: false },
-  ];
+  const { currentUser, userProfile } = useAuth();
+  const { conversationId: paramConvId } = useParams<{ conversationId?: string }>();
+  const navigate = useNavigate();
+
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [selectedConvId, setSelectedConvId] = useState<string | null>(paramConvId ?? null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [otherUsers, setOtherUsers] = useState<Record<string, UserProfile>>({});
+  const [messageText, setMessageText] = useState("");
+  const [loadingConvs, setLoadingConvs] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [search, setSearch] = useState("");
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  const role = userProfile?.role ?? "student";
+
+  // Load conversations
+  useEffect(() => {
+    if (!currentUser) return;
+    const unsub = subscribeToConversations(currentUser.uid, async (convs) => {
+      setConversations(convs);
+      setLoadingConvs(false);
+
+      // Fetch other user profiles
+      const uids = new Set<string>();
+      convs.forEach((c) =>
+        c.participants.filter((p) => p !== currentUser.uid).forEach((p) => uids.add(p))
+      );
+      const fetched: Record<string, UserProfile> = {};
+      await Promise.all(
+        Array.from(uids).map(async (uid) => {
+          const p = await getUserProfile(uid);
+          if (p) fetched[uid] = p;
+        })
+      );
+      setOtherUsers((prev) => ({ ...prev, ...fetched }));
+
+      // Auto-select first conversation if none selected
+      if (!selectedConvId && convs.length > 0) {
+        setSelectedConvId(convs[0].id);
+      }
+    });
+    return unsub;
+  }, [currentUser]);
+
+  // Load messages for selected conversation
+  useEffect(() => {
+    if (!selectedConvId) return;
+    const unsub = subscribeToMessages(selectedConvId, (msgs) => {
+      setMessages(msgs);
+      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+    });
+    return unsub;
+  }, [selectedConvId]);
+
+  const handleSend = async () => {
+    if (!messageText.trim() || !selectedConvId || !currentUser || sending) return;
+    const text = messageText.trim();
+    setMessageText("");
+    setSending(true);
+    try {
+      await sendMessage(selectedConvId, currentUser.uid, text);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const getOtherUser = (conv: Conversation): UserProfile | null => {
+    const uid = conv.participants.find((p) => p !== currentUser?.uid);
+    return uid ? otherUsers[uid] ?? null : null;
+  };
+
+  const initials = (name: string) =>
+    name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+
+  const selectedConv = conversations.find((c) => c.id === selectedConvId);
+  const selectedOtherUser = selectedConv ? getOtherUser(selectedConv) : null;
+
+  const filteredConvs = conversations.filter((c) => {
+    const other = getOtherUser(c);
+    return !search || (other && other.name.toLowerCase().includes(search.toLowerCase()));
+  });
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] p-6 w-full max-w-7xl mx-auto">
@@ -28,134 +121,161 @@ export default function Messages() {
           <div className="p-4 border-b border-border">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Search messages" className="pl-9 bg-background" />
+              <Input
+                placeholder="Search messages"
+                className="pl-9 bg-background"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
             </div>
           </div>
           <ScrollArea className="flex-1">
-            <div className="p-2 space-y-1">
-              {conversations.map((chat, i) => (
-                <button
-                  key={i}
-                  className={`w-full flex items-center p-3 rounded-lg text-left transition-colors ${
-                    chat.active ? "bg-background shadow-sm border border-border" : "hover:bg-muted/50 border border-transparent"
-                  }`}
-                >
-                  <Avatar className="h-10 w-10 border border-border">
-                    <AvatarFallback className="bg-primary/10 text-primary font-medium">{chat.init}</AvatarFallback>
-                  </Avatar>
-                  <div className="ml-3 flex-1 overflow-hidden">
-                    <div className="flex justify-between items-baseline">
-                      <h4 className="font-semibold text-sm truncate">{chat.name}</h4>
-                      <span className="text-[10px] text-muted-foreground ml-2 shrink-0">{chat.time}</span>
-                    </div>
-                    <p className={`text-xs truncate mt-0.5 ${chat.unread ? "text-foreground font-medium" : "text-muted-foreground"}`}>
-                      {chat.lastMessage}
-                    </p>
-                  </div>
-                  {chat.unread > 0 && (
-                    <div className="ml-2 bg-primary text-primary-foreground text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0">
-                      {chat.unread}
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
+            {loadingConvs ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : filteredConvs.length === 0 ? (
+              <div className="p-4 text-center text-sm text-muted-foreground">
+                No conversations yet. Connect with alumni to start messaging!
+              </div>
+            ) : (
+              <div className="p-2 space-y-1">
+                {filteredConvs.map((conv) => {
+                  const other = getOtherUser(conv);
+                  const isActive = conv.id === selectedConvId;
+                  return (
+                    <button
+                      key={conv.id}
+                      className={`w-full flex items-center p-3 rounded-lg text-left transition-colors ${
+                        isActive
+                          ? "bg-background shadow-sm border border-border"
+                          : "hover:bg-muted/50 border border-transparent"
+                      }`}
+                      onClick={() => setSelectedConvId(conv.id)}
+                    >
+                      <Avatar className="h-10 w-10 border border-border">
+                        <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                          {other ? initials(other.name) : "?"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="ml-3 flex-1 overflow-hidden">
+                        <div className="flex justify-between items-baseline">
+                          <h4 className="font-semibold text-sm truncate">{other?.name ?? "Unknown"}</h4>
+                          <span className="text-[10px] text-muted-foreground ml-2 shrink-0">
+                            {conv.lastMessageAt
+                              ? formatDistanceToNow(conv.lastMessageAt, { addSuffix: true })
+                              : ""}
+                          </span>
+                        </div>
+                        <p className="text-xs truncate mt-0.5 text-muted-foreground">
+                          {conv.lastMessage || "No messages yet"}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </ScrollArea>
         </div>
 
         {/* Chat Area */}
         <div className="flex-1 flex flex-col hidden md:flex">
-          {/* Chat Header */}
-          <div className="p-4 border-b border-border flex items-center justify-between bg-background">
-            <div className="flex items-center">
-              <Avatar className="h-10 w-10 border border-border">
-                <AvatarFallback className="bg-primary/10 text-primary">JD</AvatarFallback>
-              </Avatar>
-              <div className="ml-3">
-                <h4 className="font-semibold text-sm">John Doe</h4>
-                <p className="text-xs text-emerald-500 font-medium">Online</p>
+          {!selectedConvId ? (
+            <div className="flex-1 flex items-center justify-center text-muted-foreground">
+              <div className="text-center">
+                <p className="text-sm">Select a conversation to start chatting</p>
               </div>
             </div>
-            <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-                <Phone className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-                <Video className="h-4 w-4" />
-              </Button>
-              <Separator orientation="vertical" className="h-6 mx-1" />
-              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Chat Messages */}
-          <ScrollArea className="flex-1 p-4 bg-muted/10">
-            <div className="space-y-6">
-              <div className="flex flex-col items-center">
-                <span className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-md">Today</span>
-              </div>
-              
-              <div className="flex gap-3">
-                <Avatar className="h-8 w-8 shrink-0 border border-border mt-auto">
-                  <AvatarFallback className="bg-primary/10 text-primary text-xs">JD</AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col gap-1 max-w-[70%]">
-                  <div className="bg-background border border-border p-3 rounded-2xl rounded-bl-sm shadow-sm">
-                    <p className="text-sm">Hi there! Thanks for connecting. I saw you also went to Tech University.</p>
+          ) : (
+            <>
+              {/* Chat Header */}
+              <div className="p-4 border-b border-border flex items-center justify-between bg-background">
+                <div className="flex items-center">
+                  <Avatar className="h-10 w-10 border border-border">
+                    <AvatarFallback className="bg-primary/10 text-primary">
+                      {selectedOtherUser ? initials(selectedOtherUser.name) : "?"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="ml-3">
+                    <h4 className="font-semibold text-sm">{selectedOtherUser?.name ?? "Unknown"}</h4>
+                    <p className="text-xs text-muted-foreground">
+                      {selectedOtherUser?.occupation}
+                      {selectedOtherUser?.company ? ` at ${selectedOtherUser.company}` : ""}
+                    </p>
                   </div>
-                  <span className="text-[10px] text-muted-foreground ml-1">10:15 AM</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Button variant="ghost" size="icon" className="text-muted-foreground">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
 
-              <div className="flex gap-3 flex-row-reverse">
-                <div className="flex flex-col gap-1 max-w-[70%] items-end">
-                  <div className="bg-primary text-primary-foreground p-3 rounded-2xl rounded-br-sm shadow-sm">
-                    <p className="text-sm">Hey John! Yes, I graduated in 2018. How about you?</p>
-                  </div>
-                  <span className="text-[10px] text-muted-foreground mr-1">10:22 AM</span>
+              {/* Messages */}
+              <ScrollArea className="flex-1 p-4 bg-muted/10">
+                <div className="space-y-4">
+                  {messages.map((msg) => {
+                    const isMine = msg.senderId === currentUser?.uid;
+                    return (
+                      <div key={msg.id} className={`flex gap-3 ${isMine ? "flex-row-reverse" : ""}`}>
+                        {!isMine && (
+                          <Avatar className="h-8 w-8 shrink-0 border border-border mt-auto">
+                            <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                              {selectedOtherUser ? initials(selectedOtherUser.name) : "?"}
+                            </AvatarFallback>
+                          </Avatar>
+                        )}
+                        <div className={`flex flex-col gap-1 max-w-[70%] ${isMine ? "items-end" : ""}`}>
+                          <div
+                            className={`p-3 rounded-2xl shadow-sm text-sm ${
+                              isMine
+                                ? "bg-primary text-primary-foreground rounded-br-sm"
+                                : "bg-background border border-border rounded-bl-sm"
+                            }`}
+                          >
+                            {msg.content}
+                          </div>
+                          <span className="text-[10px] text-muted-foreground mx-1">
+                            {msg.createdAt
+                              ? formatDistanceToNow(msg.createdAt, { addSuffix: true })
+                              : ""}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <div ref={bottomRef} />
+                </div>
+              </ScrollArea>
+
+              {/* Input */}
+              <div className="p-4 bg-background border-t border-border">
+                <div className="flex items-end gap-2 bg-muted/20 border border-border p-2 rounded-xl focus-within:ring-1 focus-within:ring-primary/50 transition-all">
+                  <textarea
+                    className="flex-1 max-h-32 min-h-8 bg-transparent border-0 focus:ring-0 resize-none py-1.5 px-2 text-sm placeholder:text-muted-foreground outline-none"
+                    placeholder="Type a message..."
+                    rows={1}
+                    value={messageText}
+                    onChange={(e) => setMessageText(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                  />
+                  <Button
+                    size="icon"
+                    className="h-8 w-8 rounded-full ml-1 shrink-0"
+                    onClick={handleSend}
+                    disabled={!messageText.trim() || sending}
+                  >
+                    {sending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
+                  </Button>
                 </div>
               </div>
-
-              <div className="flex gap-3">
-                <Avatar className="h-8 w-8 shrink-0 border border-border mt-auto">
-                  <AvatarFallback className="bg-primary/10 text-primary text-xs">JD</AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col gap-1 max-w-[70%]">
-                  <div className="bg-background border border-border p-3 rounded-2xl rounded-bl-sm shadow-sm">
-                    <p className="text-sm">Class of 2016 here. We're looking for a senior frontend dev at TechCorp. Are you open to new opportunities?</p>
-                  </div>
-                  <div className="bg-background border border-border p-3 rounded-2xl shadow-sm mt-1">
-                    <p className="text-sm">Sounds good, let's connect tomorrow.</p>
-                  </div>
-                  <span className="text-[10px] text-muted-foreground ml-1">10:30 AM</span>
-                </div>
-              </div>
-            </div>
-          </ScrollArea>
-
-          {/* Chat Input */}
-          <div className="p-4 bg-background border-t border-border">
-            <div className="flex items-end gap-2 bg-muted/20 border border-border p-2 rounded-xl focus-within:ring-1 focus-within:ring-primary/50 transition-all">
-              <Button variant="ghost" size="icon" className="shrink-0 text-muted-foreground h-8 w-8 hover:text-foreground hover:bg-muted/50 rounded-full">
-                <Paperclip className="h-4 w-4" />
-              </Button>
-              <textarea 
-                className="flex-1 max-h-32 min-h-8 bg-transparent border-0 focus:ring-0 resize-none py-1.5 px-2 text-sm placeholder:text-muted-foreground"
-                placeholder="Type a message..."
-                rows={1}
-              />
-              <div className="flex items-center gap-1 shrink-0 pb-0.5">
-                <Button variant="ghost" size="icon" className="text-muted-foreground h-8 w-8 hover:text-foreground hover:bg-muted/50 rounded-full">
-                  <Smile className="h-4 w-4" />
-                </Button>
-                <Button size="icon" className="h-8 w-8 rounded-full ml-1">
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
+            </>
+          )}
         </div>
       </div>
     </div>

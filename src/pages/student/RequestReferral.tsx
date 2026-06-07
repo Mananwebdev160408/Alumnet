@@ -1,18 +1,25 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ArrowLeft, Send, UploadCloud, FileText, Trash2, CheckCircle2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { ArrowLeft, Send, UploadCloud, FileText, Trash2, CheckCircle2, Loader2 } from "lucide-react";
+import { useAuth } from "@/lib/AuthContext";
+import { getUserProfile, submitReferralRequest } from "@/lib/firestoreService";
+import type { UserProfile } from "@/lib/types";
+import { toast } from "sonner";
 
 export default function RequestReferral() {
-  const { alumniId } = useParams();
+  const { alumniId } = useParams<{ alumniId: string }>();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { currentUser } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [alumni, setAlumni] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   
   const [jobTitle, setJobTitle] = useState<string>("");
   const [jobLink, setJobLink] = useState<string>("");
@@ -20,30 +27,27 @@ export default function RequestReferral() {
   const [uploadedFile, setUploadedFile] = useState<{ name: string; size: number } | null>(null);
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
 
-  // Mock alumni data
-  const alumni = {
-    name: "Eleanor Pena",
-    role: "Product Designer",
-    company: "Figma",
-    init: "EP",
-  };
+  useEffect(() => {
+    if (!alumniId) return;
+    getUserProfile(alumniId).then((p) => {
+      setAlumni(p);
+      setLoading(false);
+    }).catch((err) => {
+      console.error(err);
+      toast.error("Failed to load alumnus profile.");
+      setLoading(false);
+    });
+  }, [alumniId]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       if (file.type !== "application/pdf") {
-        toast({
-          title: "Invalid File Type",
-          description: "Please upload a PDF document.",
-          variant: "destructive"
-        });
+        toast.error("Please upload a PDF document.");
         return;
       }
       setUploadedFile({ name: file.name, size: file.size });
-      toast({
-        title: "Resume Uploaded",
-        description: `${file.name} attached successfully.`
-      });
+      toast.success(`${file.name} attached successfully.`);
     }
   };
 
@@ -54,39 +58,66 @@ export default function RequestReferral() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!currentUser || !alumni) return;
     if (!jobTitle.trim()) {
-      toast({
-        title: "Role Required",
-        description: "Please enter the target job title.",
-        variant: "destructive"
-      });
+      toast.error("Please enter the target job title.");
       return;
     }
     if (!uploadedFile) {
-      toast({
-        title: "Resume Required",
-        description: "Please upload your resume PDF.",
-        variant: "destructive"
-      });
+      toast.error("Please upload your resume PDF.");
       return;
     }
     if (!pitch.trim()) {
-      toast({
-        title: "Pitch Required",
-        description: "Please enter a personal pitch explaining why you are a fit.",
-        variant: "destructive"
-      });
+      toast.error("Please enter a personal pitch.");
       return;
     }
 
-    setIsSubmitted(true);
-    toast({
-      title: "Request Submitted",
-      description: `Your request has been added to ${alumni.name}'s referral queue.`
-    });
+    setSubmitting(true);
+    try {
+      await submitReferralRequest({
+        studentId: currentUser.uid,
+        referralId: "cold-referral",
+        alumniId: alumni.uid,
+        company: alumni.company || "Company",
+        role: jobTitle.trim(),
+        resumeName: uploadedFile.name,
+        pitch: pitch.trim(),
+        status: "pending",
+      });
+      setIsSubmitted(true);
+      toast.success(`Your request has been added to ${alumni.name}'s referral queue.`);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to submit request.");
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  const initials = (name: string) =>
+    name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!alumni) {
+    return (
+      <div className="flex-1 max-w-xl mx-auto w-full p-8 pt-12 text-center space-y-6">
+        <h3 className="text-xl font-bold uppercase">Alumni Profile Not Found</h3>
+        <p className="text-muted-foreground">The requested alumnus is not available.</p>
+        <Button asChild className="border-2 border-border rounded-none uppercase font-bold text-xs">
+          <Link to="/student/alumni">Back to Directory</Link>
+        </Button>
+      </div>
+    );
+  }
 
   if (isSubmitted) {
     return (
@@ -104,7 +135,7 @@ export default function RequestReferral() {
           <CardContent className="space-y-4 pt-4 text-left border-t border-border mt-6">
             <div className="space-y-1">
               <span className="text-[10px] font-black text-muted-foreground tracking-widest uppercase block">Target Company</span>
-              <p className="text-base font-bold uppercase">{alumni.company}</p>
+              <p className="text-base font-bold uppercase">{alumni.company || "Company"}</p>
             </div>
             <div className="space-y-1">
               <span className="text-[10px] font-black text-muted-foreground tracking-widest uppercase block">Target Role</span>
@@ -130,28 +161,28 @@ export default function RequestReferral() {
 
   return (
     <div className="flex-1 max-w-3xl mx-auto w-full p-8 pt-6 space-y-6">
-      <Link to="/student/alumni" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground hover:text-foreground transition-colors mb-2">
-        <ArrowLeft className="size-3" /> Back to Directory
+      <Link to={`/student/alumni/${alumni.uid}`} className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground hover:text-foreground transition-colors mb-2">
+        <ArrowLeft className="size-3" /> Back to Profile
       </Link>
 
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-foreground uppercase">Request Referral</h2>
-          <p className="text-muted-foreground">Request a professional referral at {alumni.company} from {alumni.name}.</p>
+          <p className="text-muted-foreground">Request a professional referral at {alumni.company || "Company"} from {alumni.name}.</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2 space-y-6">
-            <Card className="border-2 border-border shadow-[6px_6px_0_0_rgba(0,0,0,1)] rounded-none">
+            <Card className="border-2 border-border shadow-[6px_6px_0_0_rgba(0,0,0,1)] rounded-none bg-card">
               <CardHeader className="border-b border-border">
                 <CardTitle className="uppercase text-sm tracking-wider">Referral Information</CardTitle>
               </CardHeader>
               <CardContent className="p-6 space-y-4">
                 <div className="space-y-2">
                   <span className="text-[10px] font-black text-muted-foreground tracking-widest uppercase block">Target Company</span>
-                  <Input value={alumni.company} disabled className="rounded-none border-2 border-border bg-muted/30 font-bold" />
+                  <Input value={alumni.company || "Company"} disabled className="rounded-none border-2 border-border bg-muted/30 font-bold" />
                 </div>
 
                 <div className="space-y-2">
@@ -176,7 +207,7 @@ export default function RequestReferral() {
                   {!uploadedFile ? (
                     <div
                       onClick={() => fileInputRef.current?.click()}
-                      className="border-2 border-dashed border-border p-6 text-center cursor-pointer hover:bg-muted/10 transition-colors flex flex-col items-center justify-center gap-2"
+                      className="border-2 border-dashed border-border p-6 text-center cursor-pointer hover:bg-muted/10 transition-colors flex flex-col items-center justify-center gap-2 bg-white"
                     >
                       <UploadCloud className="h-8 w-8 text-primary" />
                       <span className="text-xs font-bold uppercase tracking-wider">Select Resume PDF</span>
@@ -200,7 +231,7 @@ export default function RequestReferral() {
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-border shadow-[6px_6px_0_0_rgba(0,0,0,1)] rounded-none">
+            <Card className="border-2 border-border shadow-[6px_6px_0_0_rgba(0,0,0,1)] rounded-none bg-card">
               <CardHeader className="border-b border-border">
                 <CardTitle className="uppercase text-sm tracking-wider">Your Pitch *</CardTitle>
               </CardHeader>
@@ -233,20 +264,25 @@ export default function RequestReferral() {
               <CardContent className="p-6 space-y-4">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-12 w-12 border border-border">
-                    <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">{alumni.init}</AvatarFallback>
+                    <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">{initials(alumni.name)}</AvatarFallback>
                   </Avatar>
                   <div>
                     <h4 className="font-bold text-sm uppercase">{alumni.name}</h4>
-                    <p className="text-xs text-muted-foreground">{alumni.role} at {alumni.company}</p>
+                    <p className="text-xs text-muted-foreground">{alumni.occupation}{alumni.company ? ` at ${alumni.company}` : ""}</p>
                   </div>
                 </div>
-                <div className="border-t border-border pt-4 text-xs leading-relaxed text-muted-foreground">
+                <div className="border-t border-border pt-4 text-xs leading-relaxed text-muted-foreground font-semibold">
                   <p>Alumni will review your resume and pitch. If interested, they will submit a referral through their internal company portal.</p>
                 </div>
               </CardContent>
-              <CardFooter className="p-6 border-t border-border">
-                <Button type="submit" className="w-full bg-primary hover:bg-primary/95 text-white font-bold uppercase tracking-widest text-xs h-12 rounded-none border-2 border-border shadow-[4px_4px_0_0_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all">
-                  <Send className="mr-2 h-4 w-4" /> Send Request
+              <CardFooter className="p-6 border-t border-border bg-muted/10">
+                <Button 
+                  type="submit" 
+                  className="w-full bg-primary hover:bg-primary/95 text-white font-bold uppercase tracking-widest text-xs h-12 rounded-none border-2 border-border shadow-[4px_4px_0_0_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
+                  disabled={submitting}
+                >
+                  {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="mr-2 h-4 w-4" />}
+                  Send Request
                 </Button>
               </CardFooter>
             </Card>

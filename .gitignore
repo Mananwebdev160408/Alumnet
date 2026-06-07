@@ -31,3 +31,4 @@ design/
 # Firebase Admin SDK service account (never commit this)
 firebase-service-account.json
 *service-account*.json
+file.txt
